@@ -13,6 +13,7 @@ TBD
 ## Team
 
 - Edward (GitHub: pbmagnet4)
+- Andrea (GitHub: pandiorama)
 
 ## Timeline
 
