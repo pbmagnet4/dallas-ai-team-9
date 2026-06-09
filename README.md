@@ -14,6 +14,7 @@ TBD
 
 - Edward (GitHub: pbmagnet4)
 - Andrea (GitHub: pandiorama)
+- Nithin (Github: omegagigachad)
 
 ## Timeline
 
