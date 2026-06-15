@@ -22,7 +22,7 @@ build/
 
 # Logs
 *.log
-logs/
+logs/*.log
 
 # Data/Models
 data/
