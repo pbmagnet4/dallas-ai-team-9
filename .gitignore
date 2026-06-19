@@ -24,6 +24,15 @@ build/
 *.log
 logs/*.log
 
+# Secrets
+.env
+.env.local
+.env.*.local
+secrets/
+
+# Data (crawl cache, raw API output)
+data/
+
 # Data/Models
 data/
 models/
