@@ -26,18 +26,45 @@ export const HEALTH_COLORS: Record<string, string> = {
 };
 
 type CanvasTool = 'select' | 'pan';
+export type LayoutMode = 'elk' | 'force';
 
 interface JourneyCanvasProps {
   nodes: Node[];
   edges: Edge[];
   activeTool?: CanvasTool;
+  layoutMode?: LayoutMode;
   onNodeClick?: (node: Node) => void;
+}
+
+function edgeStyle(edge: Edge, layoutMode: LayoutMode, maxWeight: number): React.CSSProperties {
+  const weight = (edge.data as { flowWeight?: number })?.flowWeight ?? 100;
+  const isIssueEdge = (edge.data as { cascade?: boolean })?.cascade;
+
+  if (layoutMode === 'force') {
+    const thickness = Math.max(1, (weight / maxWeight) * 4);
+    return {
+      stroke: isIssueEdge
+        ? 'color-mix(in srgb, #dc2626 50%, var(--border))'
+        : 'var(--border)',
+      strokeWidth: thickness,
+      opacity: 0.8,
+    };
+  }
+
+  return {
+    stroke: isIssueEdge
+      ? 'color-mix(in srgb, #dc2626 40%, var(--border))'
+      : 'var(--border)',
+    strokeWidth: isIssueEdge ? 2 : (edge.style?.strokeWidth ?? 1),
+    opacity: 0.9,
+  };
 }
 
 export default function JourneyCanvas({
   nodes: initialNodes,
   edges: initialEdges,
   activeTool = 'select',
+  layoutMode = 'elk',
   onNodeClick,
 }: JourneyCanvasProps) {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
@@ -48,11 +75,22 @@ export default function JourneyCanvas({
     [setEdges],
   );
 
+  const maxWeight = Math.max(
+    ...initialEdges.map(e => (e.data as { flowWeight?: number })?.flowWeight ?? 100),
+    100,
+  );
+
+  const styledEdges = edges.map(e => ({
+    ...e,
+    style: edgeStyle(e, layoutMode, maxWeight),
+    animated: layoutMode === 'elk' && !!e.animated,
+  }));
+
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={styledEdges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

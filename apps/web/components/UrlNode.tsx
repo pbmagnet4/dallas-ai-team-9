@@ -14,6 +14,9 @@ export interface UrlNodeData extends Record<string, unknown> {
   patterns?: IssuePattern[];
   sources?: DataSource[];
   brief?: ActionBrief;
+  // DoubleLoop enhancements
+  maxSessions?: number;    // injected by CanvasShell for bar scaling
+  cascadeDepth?: number;   // 0 = issue source, 1+ = downstream, undefined = unaffected
 }
 
 const HEALTH_COLORS: Record<string, string> = {
@@ -34,18 +37,35 @@ export default function UrlNode({ data, selected }: NodeProps) {
   const d = data as unknown as UrlNodeData;
   const healthColor = HEALTH_COLORS[d.health] ?? '#9ca3af';
 
+  // Cascade dimming: downstream nodes fade; issue sources stay vivid
+  const isIssueSource = d.health === 'critical' || d.health === 'leaking';
+  const cascadeOpacity = (d.cascadeDepth !== undefined && !isIssueSource)
+    ? Math.max(0.45, 1 - d.cascadeDepth * 0.2)
+    : 1;
+
+  // Traffic bar: session volume relative to max
+  const sessionPct = (d.ga4Sessions && d.maxSessions)
+    ? Math.max(4, (d.ga4Sessions / d.maxSessions) * 100)
+    : 0;
+
+  // Cascade background tint on downstream nodes
+  const cascadeTint = (d.cascadeDepth && d.cascadeDepth > 0 && !isIssueSource)
+    ? `color-mix(in srgb, #dc2626 ${d.cascadeDepth * 2}%, var(--surface))`
+    : 'var(--surface)';
+
   return (
     <div
       style={{
         width: 220,
-        background: 'var(--surface)',
+        background: cascadeTint,
         border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
         borderRadius: 8,
         boxShadow: selected
           ? `0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent), var(--shadow-node)`
           : 'var(--shadow-node)',
-        transition: 'border-color 0.15s, box-shadow 0.15s',
+        transition: 'border-color 0.15s, box-shadow 0.15s, opacity 0.3s',
         overflow: 'hidden',
+        opacity: cascadeOpacity,
       }}
     >
       <Handle
@@ -54,10 +74,10 @@ export default function UrlNode({ data, selected }: NodeProps) {
         style={{ background: 'var(--border)', border: '2px solid var(--surface)' }}
       />
 
-      {/* Health bar — 2px top strip */}
-      <div style={{ height: 2, background: healthColor, opacity: 0.7 }} />
+      {/* Health strip — 2px top */}
+      <div style={{ height: 2, background: healthColor, opacity: 0.85 }} />
 
-      <div style={{ padding: '8px 10px 8px' }}>
+      <div style={{ padding: '8px 10px 6px' }}>
         {/* Row 1: health dot + URL label + priority */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4 }}>
           <span
@@ -111,18 +131,33 @@ export default function UrlNode({ data, selected }: NodeProps) {
           </div>
         )}
 
-        {/* Metrics row */}
-        {d.gscClicks !== undefined && (
-          <div
-            style={{
-              display: 'flex', gap: 10, marginLeft: 12,
-              fontSize: 10, color: 'var(--ink-dim)', fontVariantNumeric: 'tabular-nums',
-            }}
-          >
-            <span>{d.gscClicks.toLocaleString()} clicks</span>
-            {d.ga4Sessions !== undefined && (
-              <span>{d.ga4Sessions.toLocaleString()} sessions</span>
+        {/* Traffic volume bar + metrics */}
+        {d.ga4Sessions !== undefined && (
+          <div style={{ marginLeft: 12 }}>
+            {/* Volume bar */}
+            {sessionPct > 0 && (
+              <div style={{
+                height: 3, borderRadius: 2, background: 'var(--border-subtle)',
+                marginBottom: 4, overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%', borderRadius: 2,
+                  width: `${sessionPct}%`,
+                  background: healthColor,
+                  opacity: 0.6,
+                  transition: 'width 0.4s ease',
+                }} />
+              </div>
             )}
+            {/* Metric text */}
+            <div style={{
+              display: 'flex', gap: 8,
+              fontSize: 10, color: 'var(--ink-dim)', fontVariantNumeric: 'tabular-nums',
+            }}>
+              <span>{d.gscClicks?.toLocaleString()} clicks</span>
+              <span style={{ opacity: 0.5 }}>·</span>
+              <span>{d.ga4Sessions.toLocaleString()} sessions</span>
+            </div>
           </div>
         )}
       </div>

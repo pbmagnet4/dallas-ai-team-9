@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ReactFlowProvider, type Node, type Edge } from '@xyflow/react';
-import JourneyCanvas from '@/components/JourneyCanvas';
+import JourneyCanvas, { type LayoutMode } from '@/components/JourneyCanvas';
 import AuditSummary from '@/components/AuditSummary';
 import IssuePatternLegend from '@/components/IssuePatternLegend';
 import type { UrlNodeData } from '@/components/UrlNode';
@@ -59,12 +59,13 @@ const BASE_NODES: Node<UrlNodeData>[] = [
   },
 ];
 
+// flowWeight = estimated sessions traversing this edge path
 const BASE_EDGES: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2', animated: true,  style: { strokeWidth: 2 } },
-  { id: 'e1-3', source: '1', target: '3', animated: true,  style: { strokeWidth: 1.5 } },
-  { id: 'e3-4', source: '3', target: '4',                  style: { strokeWidth: 1 } },
-  { id: 'e2-4', source: '2', target: '4',                  style: { strokeWidth: 1.5 } },
-  { id: 'e2-5', source: '2', target: '5',                  style: { strokeWidth: 1 } },
+  { id: 'e1-2', source: '1', target: '2', data: { flowWeight: 180 } },
+  { id: 'e1-3', source: '1', target: '3', data: { flowWeight: 320 } },
+  { id: 'e3-4', source: '3', target: '4', data: { flowWeight: 45  } },
+  { id: 'e2-4', source: '2', target: '4', data: { flowWeight: 95  } },
+  { id: 'e2-5', source: '2', target: '5', data: { flowWeight: 60  } },
 ];
 
 const FILTER_OPTIONS: { value: HealthFilter; label: string }[] = [
@@ -82,6 +83,8 @@ const FILTER_COLORS: Record<HealthFilter, string> = {
   opportunity: 'var(--accent)',
   healthy:     '#16a34a',
 };
+
+// ── Layout engines ────────────────────────────────────────────────────────────
 
 async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promise<Node<UrlNodeData>[]> {
   const ELK = (await import('elkjs/lib/elk.bundled.js')).default;
@@ -104,6 +107,120 @@ async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promis
   });
 }
 
+async function applyForceLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promise<Node<UrlNodeData>[]> {
+  const d3 = await import('d3-force');
+
+  type SimNode = { id: string; sessions: number; x: number; y: number; vx: number; vy: number };
+  type SimLink = { source: SimNode; target: SimNode; weight: number };
+
+  const cx = 500, cy = 380;
+  const simNodes: SimNode[] = nodes.map((n, i) => ({
+    id: n.id,
+    sessions: (n.data as UrlNodeData).ga4Sessions ?? 100,
+    x: cx + Math.cos((i / nodes.length) * Math.PI * 2) * 200,
+    y: cy + Math.sin((i / nodes.length) * Math.PI * 2) * 200,
+    vx: 0,
+    vy: 0,
+  }));
+  const nodeById = Object.fromEntries(simNodes.map(n => [n.id, n]));
+
+  const simLinks: SimLink[] = edges
+    .filter(e => nodeById[e.source] && nodeById[e.target])
+    .map(e => ({
+      source: nodeById[e.source],
+      target: nodeById[e.target],
+      weight: (e.data as { flowWeight?: number })?.flowWeight ?? 100,
+    }));
+
+  const maxWeight = Math.max(...simLinks.map(l => l.weight), 1);
+
+  const sim = d3.forceSimulation(simNodes)
+    .force('link', d3.forceLink<SimNode, SimLink>(simLinks)
+      .id(n => n.id)
+      .distance(l => 280 - (l.weight / maxWeight) * 120)
+      .strength(0.7))
+    .force('charge', d3.forceManyBody().strength(-700))
+    .force('center', d3.forceCenter(cx, cy))
+    .force('collide', d3.forceCollide<SimNode>()
+      .radius(n => Math.sqrt(n.sessions) * 3.2 + 50)
+      .strength(0.85))
+    .stop();
+
+  // Run to convergence — synchronous, no RAF needed
+  for (let i = 0; i < 400; i++) sim.tick();
+
+  return nodes.map(n => {
+    const sn = nodeById[n.id];
+    return { ...n, position: { x: sn.x - 110, y: sn.y - 44 } };
+  });
+}
+
+// ── Cascade computation (DoubleLoop) ──────────────────────────────────────────
+
+function withCascadeAndScale(
+  nodes: Node<UrlNodeData>[],
+  edges: Edge[],
+): { nodes: Node<UrlNodeData>[]; edges: Edge[] } {
+  const maxSessions = Math.max(...nodes.map(n => (n.data as UrlNodeData).ga4Sessions ?? 0), 1);
+
+  // BFS from critical/leaking nodes to compute downstream depth
+  const depth: Record<string, number> = {};
+  const queue: { id: string; d: number }[] = [];
+
+  nodes.forEach(n => {
+    const nd = n.data as UrlNodeData;
+    if (nd.health === 'critical' || nd.health === 'leaking') {
+      depth[n.id] = 0;
+      queue.push({ id: n.id, d: 0 });
+    }
+  });
+
+  while (queue.length) {
+    const { id, d } = queue.shift()!;
+    edges.forEach(e => {
+      if (e.source === id) {
+        if (depth[e.target] === undefined || depth[e.target] > d + 1) {
+          depth[e.target] = d + 1;
+          queue.push({ id: e.target, d: d + 1 });
+        }
+      }
+    });
+  }
+
+  // Issue source nodes: cascadeDepth = 0
+  // Downstream nodes: their computed depth
+  // Unaffected nodes: undefined (no dimming)
+  const enrichedNodes = nodes.map(n => {
+    const nd = n.data as UrlNodeData;
+    const isSource = nd.health === 'critical' || nd.health === 'leaking';
+    return {
+      ...n,
+      data: {
+        ...nd,
+        maxSessions,
+        cascadeDepth: isSource ? 0 : depth[n.id],
+      },
+    };
+  });
+
+  // Mark edges that originate from issue-source nodes
+  const sourcedIds = new Set(
+    nodes.filter(n => {
+      const nd = n.data as UrlNodeData;
+      return nd.health === 'critical' || nd.health === 'leaking';
+    }).map(n => n.id),
+  );
+
+  const enrichedEdges = edges.map(e => ({
+    ...e,
+    data: { ...((e.data as object) ?? {}), cascade: sourcedIds.has(e.source) },
+  }));
+
+  return { nodes: enrichedNodes, edges: enrichedEdges };
+}
+
+// ── Skeleton / empty states ───────────────────────────────────────────────────
+
 function CanvasSkeleton() {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
@@ -111,11 +228,7 @@ function CanvasSkeleton() {
         {[80, 120, 80].map((h, col) => (
           <div key={col} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {Array.from({ length: col === 1 ? 2 : 1 }).map((_, i) => (
-              <div
-                key={i}
-                style={{ width: 180, height: h, borderRadius: 8, background: 'var(--surface-raised)' }}
-                className="animate-pulse"
-              />
+              <div key={i} style={{ width: 180, height: h, borderRadius: 8, background: 'var(--surface-raised)' }} className="animate-pulse" />
             ))}
           </div>
         ))}
@@ -143,32 +256,49 @@ function EmptyFilterState({ filter, onClear }: { filter: string; onClear: () => 
   );
 }
 
+// ── Main canvas ───────────────────────────────────────────────────────────────
+
 function CanvasInner() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [filter, setFilter] = useState<HealthFilter>('all');
   const [activeTool, setActiveTool] = useState<CanvasTool>('select');
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('elk');
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [layoutNodes, setLayoutNodes] = useState<Node<UrlNodeData>[]>(BASE_NODES);
-  const [elkReady, setElkReady] = useState(false);
+
+  const [elkNodes,   setElkNodes]   = useState<Node<UrlNodeData>[]>([]);
+  const [forceNodes, setForceNodes] = useState<Node<UrlNodeData>[]>([]);
+  const [enrichedEdges, setEnrichedEdges] = useState<Edge[]>(BASE_EDGES);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    applyElkLayout(BASE_NODES, BASE_EDGES)
-      .then(laid => { setLayoutNodes(laid); setElkReady(true); })
-      .catch(() => { setElkReady(true); });
+    const { nodes: cn, edges: ce } = withCascadeAndScale(BASE_NODES, BASE_EDGES);
+    setEnrichedEdges(ce);
+
+    Promise.all([
+      applyElkLayout(cn, ce),
+      applyForceLayout(cn, ce),
+    ]).then(([elk, force]) => {
+      setElkNodes(elk);
+      setForceNodes(force);
+      setReady(true);
+    }).catch(() => setReady(true));
   }, []);
+
+  // Switch layout re-runs fitView via key change on JourneyCanvas
+  const layoutNodes = layoutMode === 'elk' ? elkNodes : forceNodes;
 
   const visibleNodes = filter === 'all'
     ? layoutNodes
     : layoutNodes.filter(n => (n.data as UrlNodeData).health === filter);
 
   const visibleEdges = filter === 'all'
-    ? BASE_EDGES
-    : BASE_EDGES.filter(e =>
+    ? enrichedEdges
+    : enrichedEdges.filter(e =>
         visibleNodes.some(n => n.id === e.source) &&
-        visibleNodes.some(n => n.id === e.target)
+        visibleNodes.some(n => n.id === e.target),
       );
 
-  const isEmpty = elkReady && visibleNodes.length === 0;
+  const isEmpty = ready && visibleNodes.length === 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
@@ -179,8 +309,12 @@ function CanvasInner() {
       />
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Tool strip */}
-        <ToolStrip activeTool={activeTool} onToolChange={setActiveTool} />
+        <ToolStrip
+          activeTool={activeTool}
+          onToolChange={setActiveTool}
+          layoutMode={layoutMode}
+          onLayoutChange={mode => { setLayoutMode(mode); setSelectedNode(null); }}
+        />
 
         {/* Canvas area */}
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }} className="dot-grid">
@@ -191,8 +325,7 @@ function CanvasInner() {
             position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
             zIndex: 10, display: 'flex', alignItems: 'center', gap: 2,
             background: 'var(--surface)', border: '1px solid var(--border)',
-            borderRadius: 20, padding: '4px 8px',
-            boxShadow: 'var(--shadow-md)',
+            borderRadius: 20, padding: '4px 8px', boxShadow: 'var(--shadow-md)',
           }}>
             <span style={{ fontSize: 11, color: 'var(--ink-dim)', padding: '0 6px' }}>Filter:</span>
             {FILTER_OPTIONS.map(opt => {
@@ -207,8 +340,7 @@ function CanvasInner() {
                     border: `1px solid ${active ? FILTER_COLORS[opt.value] : 'transparent'}`,
                     background: active ? `color-mix(in srgb, ${FILTER_COLORS[opt.value]} 10%, transparent)` : 'transparent',
                     color: active ? FILTER_COLORS[opt.value] : 'var(--ink-dim)',
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    transition: 'all 0.12s',
+                    cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s',
                   }}
                 >
                   {opt.label}{count !== undefined && <span style={{ marginLeft: 4, opacity: 0.6 }}>({count})</span>}
@@ -217,24 +349,24 @@ function CanvasInner() {
             })}
           </div>
 
-          {!elkReady ? (
+          {!ready ? (
             <CanvasSkeleton />
           ) : isEmpty ? (
             <EmptyFilterState filter={filter} onClear={() => setFilter('all')} />
           ) : (
             <div style={{ width: '100%', height: '100%' }} className="animate-fade-in">
               <JourneyCanvas
-                key={elkReady ? 'elk' : 'initial'}
+                key={`${layoutMode}-${ready}`}
                 nodes={visibleNodes}
                 edges={visibleEdges}
                 activeTool={activeTool}
+                layoutMode={layoutMode}
                 onNodeClick={node => setSelectedNode(node)}
               />
             </div>
           )}
         </div>
 
-        {/* AI Panel */}
         {aiPanelOpen && (
           <AIPanel
             onClose={() => setAiPanelOpen(false)}
@@ -245,7 +377,6 @@ function CanvasInner() {
           />
         )}
 
-        {/* Node sidebar — only when no AI panel, or alongside it */}
         {selectedNode && !aiPanelOpen && (
           <NodeSidebar
             node={selectedNode as Node<UrlNodeData>}

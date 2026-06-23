@@ -5,7 +5,7 @@ export type IssuePattern =
   | 'LEAKY_FUNNEL_ENTRY'
   | 'KEYWORD_CANNIBALIZATION_DRAIN';
 
-export type DataSource = 'gsc' | 'ga4' | 'dataforseo' | 'crawl4ai';
+export type DataSource = 'gsc' | 'ga4' | 'dataforseo' | 'crawl4ai' | 'tracardi';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -57,4 +57,20 @@ export const SOURCE_META: Record<DataSource, { label: string; color: string }> =
   ga4:        { label: 'GA4',         color: '#60a5fa' },
   dataforseo: { label: 'DataForSEO',  color: '#f59e0b' },
   crawl4ai:   { label: 'Crawl4AI',    color: '#a78bfa' },
+  tracardi:   { label: 'Tracardi',    color: '#f472b6' },
 };
+
+export type FixPlanStepKind = 'trigger' | 'action' | 'condition' | 'verify';
+
+export interface FixPlanStep {
+  kind: FixPlanStepKind;
+  title: string;
+  detail: string;
+  branch?: { yes: string; no: string };
+}
+
+export interface FixPlan {
+  pattern: IssuePattern;
+  url: string;
+  steps: FixPlanStep[];
+}

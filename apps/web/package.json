@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.0.0",
+    "@types/d3-force": "^3.0.10",
     "@xyflow/react": "^12.11.0",
+    "d3-force": "^3.0.0",
     "elkjs": "^0.11.1",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
