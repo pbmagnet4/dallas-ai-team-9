@@ -1,17 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ReactFlowProvider, type Node, type Edge } from '@xyflow/react';
 import JourneyCanvas, { type LayoutMode } from '@/components/JourneyCanvas';
 import AuditSummary from '@/components/AuditSummary';
 import IssuePatternLegend from '@/components/IssuePatternLegend';
 import type { UrlNodeData } from '@/components/UrlNode';
+import { useHistory } from '@/hooks/useHistory';
+import { computeEdgeMetrics } from '@/lib/variableEngine';
 import NodeSidebar from './NodeSidebar';
 import ToolStrip from './ToolStrip';
 import AIPanel from './AIPanel';
 
 type HealthFilter = 'all' | 'critical' | 'leaking' | 'opportunity' | 'healthy';
 type CanvasTool = 'select' | 'pan';
+
+interface CanvasState {
+  layoutMode: LayoutMode;
+  filter: HealthFilter;
+}
 
 const BASE_NODES: Node<UrlNodeData>[] = [
   {
@@ -107,6 +114,22 @@ async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promis
   });
 }
 
+async function applyDagreLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promise<Node<UrlNodeData>[]> {
+  const dagre = await import('@dagrejs/dagre');
+  const g = new dagre.graphlib.Graph();
+  g.setDefaultEdgeLabel(() => ({}));
+  g.setGraph({ rankdir: 'TB', nodesep: 60, ranksep: 90 });
+  nodes.forEach(n => g.setNode(n.id, { width: 220, height: 88 }));
+  edges.forEach(e => g.setEdge(e.source, e.target));
+  dagre.layout(g);
+  return nodes.map(n => {
+    const placed = g.node(n.id);
+    return placed
+      ? { ...n, position: { x: placed.x - 110, y: placed.y - 44 } }
+      : n;
+  });
+}
+
 async function applyForceLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promise<Node<UrlNodeData>[]> {
   const d3 = await import('d3-force');
 
@@ -146,7 +169,6 @@ async function applyForceLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Prom
       .strength(0.85))
     .stop();
 
-  // Run to convergence — synchronous, no RAF needed
   for (let i = 0; i < 400; i++) sim.tick();
 
   return nodes.map(n => {
@@ -163,7 +185,6 @@ function withCascadeAndScale(
 ): { nodes: Node<UrlNodeData>[]; edges: Edge[] } {
   const maxSessions = Math.max(...nodes.map(n => (n.data as UrlNodeData).ga4Sessions ?? 0), 1);
 
-  // BFS from critical/leaking nodes to compute downstream depth
   const depth: Record<string, number> = {};
   const queue: { id: string; d: number }[] = [];
 
@@ -187,28 +208,22 @@ function withCascadeAndScale(
     });
   }
 
-  // Issue source nodes: cascadeDepth = 0
-  // Downstream nodes: their computed depth
-  // Unaffected nodes: undefined (no dimming)
   const enrichedNodes = nodes.map(n => {
     const nd = n.data as UrlNodeData;
     const isSource = nd.health === 'critical' || nd.health === 'leaking';
     return {
       ...n,
-      data: {
-        ...nd,
-        maxSessions,
-        cascadeDepth: isSource ? 0 : depth[n.id],
-      },
+      data: { ...nd, maxSessions, cascadeDepth: isSource ? 0 : depth[n.id] },
     };
   });
 
-  // Mark edges that originate from issue-source nodes
   const sourcedIds = new Set(
-    nodes.filter(n => {
-      const nd = n.data as UrlNodeData;
-      return nd.health === 'critical' || nd.health === 'leaking';
-    }).map(n => n.id),
+    nodes
+      .filter(n => {
+        const nd = n.data as UrlNodeData;
+        return nd.health === 'critical' || nd.health === 'leaking';
+      })
+      .map(n => n.id),
   );
 
   const enrichedEdges = edges.map(e => ({
@@ -260,32 +275,54 @@ function EmptyFilterState({ filter, onClear }: { filter: string; onClear: () => 
 
 function CanvasInner() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [filter, setFilter] = useState<HealthFilter>('all');
-  const [activeTool, setActiveTool] = useState<CanvasTool>('select');
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>('elk');
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [activeTool, setActiveTool]     = useState<CanvasTool>('select');
+  const [aiPanelOpen, setAiPanelOpen]   = useState(false);
+
+  // History tracks layout mode + filter as unified canvas state
+  const history = useHistory<CanvasState>({ layoutMode: 'elk', filter: 'all' });
+  const { layoutMode, filter } = history.current;
 
   const [elkNodes,   setElkNodes]   = useState<Node<UrlNodeData>[]>([]);
+  const [dagreNodes, setDagreNodes] = useState<Node<UrlNodeData>[]>([]);
   const [forceNodes, setForceNodes] = useState<Node<UrlNodeData>[]>([]);
   const [enrichedEdges, setEnrichedEdges] = useState<Edge[]>(BASE_EDGES);
+  const [enrichedNodes, setEnrichedNodes] = useState<Node<UrlNodeData>[]>(BASE_NODES);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const { nodes: cn, edges: ce } = withCascadeAndScale(BASE_NODES, BASE_EDGES);
     setEnrichedEdges(ce);
+    setEnrichedNodes(cn);
 
     Promise.all([
       applyElkLayout(cn, ce),
+      applyDagreLayout(cn, ce),
       applyForceLayout(cn, ce),
-    ]).then(([elk, force]) => {
+    ]).then(([elk, dagre, force]) => {
       setElkNodes(elk);
+      setDagreNodes(dagre);
       setForceNodes(force);
       setReady(true);
     }).catch(() => setReady(true));
   }, []);
 
-  // Switch layout re-runs fitView via key change on JourneyCanvas
-  const layoutNodes = layoutMode === 'elk' ? elkNodes : forceNodes;
+  // Keyboard shortcuts: Cmd+Z / Cmd+Shift+Z
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (!meta) return;
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); history.undo(); }
+      if (e.key === 'z' &&  e.shiftKey) { e.preventDefault(); history.redo(); }
+      if (e.key === 'Z') { e.preventDefault(); history.redo(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [history.undo, history.redo]);
+
+  const layoutNodes =
+    layoutMode === 'elk'   ? elkNodes
+    : layoutMode === 'dagre' ? dagreNodes
+    : forceNodes;
 
   const visibleNodes = filter === 'all'
     ? layoutNodes
@@ -297,6 +334,12 @@ function CanvasInner() {
         visibleNodes.some(n => n.id === e.source) &&
         visibleNodes.some(n => n.id === e.target),
       );
+
+  // Variable engine: compute typed edge metrics from current visible graph
+  const edgeMetrics = useMemo(
+    () => computeEdgeMetrics(enrichedNodes, enrichedEdges),
+    [enrichedNodes, enrichedEdges],
+  );
 
   const isEmpty = ready && visibleNodes.length === 0;
 
@@ -313,7 +356,14 @@ function CanvasInner() {
           activeTool={activeTool}
           onToolChange={setActiveTool}
           layoutMode={layoutMode}
-          onLayoutChange={mode => { setLayoutMode(mode); setSelectedNode(null); }}
+          onLayoutChange={mode => {
+            history.push({ ...history.current, layoutMode: mode });
+            setSelectedNode(null);
+          }}
+          canUndo={history.canUndo}
+          canRedo={history.canRedo}
+          onUndo={history.undo}
+          onRedo={history.redo}
         />
 
         {/* Canvas area */}
@@ -334,7 +384,7 @@ function CanvasInner() {
               return (
                 <button
                   key={opt.value}
-                  onClick={() => setFilter(opt.value)}
+                  onClick={() => history.push({ ...history.current, filter: opt.value })}
                   style={{
                     fontSize: 11, padding: '4px 10px', borderRadius: 14,
                     border: `1px solid ${active ? FILTER_COLORS[opt.value] : 'transparent'}`,
@@ -352,7 +402,7 @@ function CanvasInner() {
           {!ready ? (
             <CanvasSkeleton />
           ) : isEmpty ? (
-            <EmptyFilterState filter={filter} onClear={() => setFilter('all')} />
+            <EmptyFilterState filter={filter} onClear={() => history.push({ ...history.current, filter: 'all' })} />
           ) : (
             <div style={{ width: '100%', height: '100%' }} className="animate-fade-in">
               <JourneyCanvas
@@ -361,6 +411,7 @@ function CanvasInner() {
                 edges={visibleEdges}
                 activeTool={activeTool}
                 layoutMode={layoutMode}
+                edgeMetrics={edgeMetrics}
                 onNodeClick={node => setSelectedNode(node)}
               />
             </div>
@@ -372,7 +423,7 @@ function CanvasInner() {
             onClose={() => setAiPanelOpen(false)}
             currentFilter={filter}
             onCommand={cmd => {
-              if (cmd.type === 'filter') setFilter(cmd.filter);
+              if (cmd.type === 'filter') history.push({ ...history.current, filter: cmd.filter });
             }}
           />
         )}

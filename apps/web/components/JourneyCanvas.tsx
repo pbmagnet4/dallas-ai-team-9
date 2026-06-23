@@ -11,12 +11,16 @@ import {
   type Edge,
   type Connection,
   type NodeTypes,
+  type EdgeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import UrlNode from './UrlNode';
+import MetricEdge from './MetricEdge';
 import type { UrlNodeData } from './UrlNode';
+import type { EdgeMetrics } from '@/lib/variableEngine';
 
 const nodeTypes: NodeTypes = { url: UrlNode };
+const edgeTypes: EdgeTypes = { metric: MetricEdge };
 
 export const HEALTH_COLORS: Record<string, string> = {
   healthy:     '#16a34a',
@@ -26,37 +30,28 @@ export const HEALTH_COLORS: Record<string, string> = {
 };
 
 type CanvasTool = 'select' | 'pan';
-export type LayoutMode = 'elk' | 'force';
+export type LayoutMode = 'elk' | 'force' | 'dagre';
 
 interface JourneyCanvasProps {
   nodes: Node[];
   edges: Edge[];
   activeTool?: CanvasTool;
   layoutMode?: LayoutMode;
+  edgeMetrics?: Map<string, EdgeMetrics>;
   onNodeClick?: (node: Node) => void;
 }
 
-function edgeStyle(edge: Edge, layoutMode: LayoutMode, maxWeight: number): React.CSSProperties {
+function edgeStyle(edge: Edge, maxWeight: number): React.CSSProperties {
   const weight = (edge.data as { flowWeight?: number })?.flowWeight ?? 100;
   const isIssueEdge = (edge.data as { cascade?: boolean })?.cascade;
-
-  if (layoutMode === 'force') {
-    const thickness = Math.max(1, (weight / maxWeight) * 4);
-    return {
-      stroke: isIssueEdge
-        ? 'color-mix(in srgb, #dc2626 50%, var(--border))'
-        : 'var(--border)',
-      strokeWidth: thickness,
-      opacity: 0.8,
-    };
-  }
+  const thickness = Math.max(1, (weight / maxWeight) * 4);
 
   return {
     stroke: isIssueEdge
-      ? 'color-mix(in srgb, #dc2626 40%, var(--border))'
+      ? 'color-mix(in srgb, #dc2626 45%, var(--border))'
       : 'var(--border)',
-    strokeWidth: isIssueEdge ? 2 : (edge.style?.strokeWidth ?? 1),
-    opacity: 0.9,
+    strokeWidth: thickness,
+    opacity: 0.85,
   };
 }
 
@@ -65,6 +60,7 @@ export default function JourneyCanvas({
   edges: initialEdges,
   activeTool = 'select',
   layoutMode = 'elk',
+  edgeMetrics,
   onNodeClick,
 }: JourneyCanvasProps) {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
@@ -82,8 +78,13 @@ export default function JourneyCanvas({
 
   const styledEdges = edges.map(e => ({
     ...e,
-    style: edgeStyle(e, layoutMode, maxWeight),
-    animated: layoutMode === 'elk' && !!e.animated,
+    type: 'metric',
+    style: edgeStyle(e, maxWeight),
+    animated: layoutMode === 'elk',
+    data: {
+      ...((e.data as object) ?? {}),
+      metrics: edgeMetrics?.get(e.id),
+    },
   }));
 
   return (
@@ -92,6 +93,7 @@ export default function JourneyCanvas({
         nodes={nodes}
         edges={styledEdges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
