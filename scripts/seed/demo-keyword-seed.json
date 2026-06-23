@@ -92,8 +92,8 @@
       "url": "https://goathomeservicestexas.com/contact",
       "pattern_flags": ["INVISIBLE_CONVERTER"],
       "keywords": [
-        { "keyword": "goat home services contact", "position": 1.2, "search_volume": 40, "intent": "navigational", "keyword_difficulty": 8, "cpc": 0.80 },
-        { "keyword": "goat home services dallas", "position": 1.8, "search_volume": 90, "intent": "navigational", "keyword_difficulty": 12, "cpc": 1.20 },
+        { "keyword": "demo site co contact", "position": 1.2, "search_volume": 40, "intent": "navigational", "keyword_difficulty": 8, "cpc": 0.80 },
+        { "keyword": "demo site co dallas", "position": 1.8, "search_volume": 90, "intent": "navigational", "keyword_difficulty": 12, "cpc": 1.20 },
         { "keyword": "get free estimate home restoration dallas", "position": 28.4, "search_volume": 260, "intent": "transactional", "keyword_difficulty": 36, "cpc": 9.60 },
         { "keyword": "free home damage estimate dallas", "position": 31.2, "search_volume": 210, "intent": "commercial", "keyword_difficulty": 34, "cpc": 8.20 }
       ]
@@ -131,7 +131,7 @@
       "keywords": [
         { "keyword": "best water damage company dallas", "position": 9.6, "search_volume": 480, "intent": "commercial", "keyword_difficulty": 58, "cpc": 13.80 },
         { "keyword": "top restoration companies dallas tx", "position": 11.4, "search_volume": 320, "intent": "commercial", "keyword_difficulty": 55, "cpc": 12.20 },
-        { "keyword": "goat vs servpro dallas", "position": 4.2, "search_volume": 70, "intent": "commercial", "keyword_difficulty": 18, "cpc": 5.40 }
+        { "keyword": "demo site co vs servpro dallas", "position": 4.2, "search_volume": 70, "intent": "commercial", "keyword_difficulty": 18, "cpc": 5.40 }
       ]
     }
   ]

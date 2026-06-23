@@ -9,7 +9,7 @@
 
 ## Context
 
-NavFlow requires behavioral page-flow data (user journeys across URLs) to produce journey map edges and to detect Leaky Funnel Entry and Invisible Converter patterns. Two data sources are available: the GA4 Data API (free, no setup) and GA4's BigQuery Export (requires GCP project linkage). The team must decide which to use for the competition build and what that means for the demo data strategy given that GOAT Home Services has thin keyword data.
+NavFlow requires behavioral page-flow data (user journeys across URLs) to produce journey map edges and to detect Leaky Funnel Entry and Invisible Converter patterns. Two data sources are available: the GA4 Data API (free, no setup) and GA4's BigQuery Export (requires GCP project linkage). The team must decide which to use for the competition build and what that means for the demo data strategy given that Demo Site Co. has thin keyword data.
 
 ---
 
@@ -53,7 +53,7 @@ NavFlow requires behavioral page-flow data (user journeys across URLs) to produc
 
 ## Decision 3: Hybrid demo data strategy
 
-**Context:** DataForSEO validation of GOAT Home Services returned only 9 ranked keywords (all positions 23–99). Intent Collision and Keyword Cannibalization Drain patterns require keyword density that the live site cannot provide.
+**Context:** DataForSEO validation of Demo Site Co. returned only 9 ranked keywords (all positions 23–99). Intent Collision and Keyword Cannibalization Drain patterns require keyword density that the live site cannot provide.
 
 **Decision:** Use real data as the behavioral foundation, synthetic data for keyword density.
 
@@ -65,7 +65,7 @@ NavFlow requires behavioral page-flow data (user journeys across URLs) to produc
 | DataForSEO keyword ranking | Live API + synthetic seed | Hybrid |
 
 **Synthetic keyword seed (`scripts/seed/demo-keyword-seed.json`):**
-- Contains realistic keyword data for GOAT's service/location pages at realistic positions and volumes.
+- Contains realistic keyword data for Demo Site Co.'s service/location pages at realistic positions and volumes.
 - Seeded into `url_signals.dseo_*` fields in Supabase during the demo environment setup.
 - Covers all 5 issue patterns to ensure every detection type fires in the demo.
 - Keywords are real search queries (home services in DFW) at plausible volumes — not fabricated.
@@ -80,7 +80,7 @@ NavFlow requires behavioral page-flow data (user journeys across URLs) to produc
 
 ## Consequences
 
-- BigQuery export must be enabled on GOAT GA4 property immediately (Edward, P0 blocker).
+- BigQuery export must be enabled on demo site GA4 property immediately (Edward, P0 blocker).
 - `scripts/seed/demo-keyword-seed.json` must be generated and ingested before the Week 3 correlation pipeline runs.
 - Krishna's correlation pipeline must merge real GA4/GSC/Crawl4AI rows with the seeded DataForSEO rows using the canonical URL as the join key.
 - The two-tier architecture must be documented in the pitch deck (Ruby, Week 8).
