@@ -56,10 +56,22 @@ export default function JourneyCanvas({ nodes: initialNodes, edges: initialEdges
         minZoom={0.1}
         maxZoom={2}
       >
-        <Background />
-        <Controls />
+        <Background color="#1e293b" gap={24} size={1.5} />
+        <Controls
+          style={{
+            background: '#0f172a',
+            border: '1px solid #334155',
+            borderRadius: 8,
+          }}
+        />
         <MiniMap
-          nodeColor={(node) => HEALTH_COLORS[node.data?.health as string] ?? '#94a3b8'}
+          nodeColor={(node) => HEALTH_COLORS[node.data?.health as string] ?? '#334155'}
+          style={{
+            background: '#0f172a',
+            border: '1px solid #334155',
+            borderRadius: 8,
+          }}
+          maskColor="rgba(2,6,23,0.7)"
         />
       </ReactFlow>
     </div>

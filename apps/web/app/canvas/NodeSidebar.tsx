@@ -75,7 +75,7 @@ export default function NodeSidebar({ node, onClose }: NodeSidebarProps) {
   const sources = data.sources ?? brief?.sources ?? [];
 
   return (
-    <aside className="w-96 h-full bg-slate-900 border-l border-slate-700 flex flex-col overflow-y-auto">
+    <aside className="w-96 h-full bg-slate-900 border-l border-slate-700 flex flex-col overflow-y-auto animate-slide-in-right">
 
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700">
@@ -105,16 +105,16 @@ export default function NodeSidebar({ node, onClose }: NodeSidebarProps) {
       </div>
 
       {/* Metrics */}
-      <div className="px-5 py-3 border-b border-slate-700 grid grid-cols-2 gap-4">
+      <div className="px-5 py-4 border-b border-slate-700 grid grid-cols-2 gap-4">
         <div>
-          <p className="text-xs text-slate-500 mb-1">GSC Clicks</p>
-          <p className="text-lg font-semibold text-slate-100 tabular-nums">
+          <p className="text-xs text-slate-600 mb-1 font-mono">GSC Clicks / mo</p>
+          <p className="text-2xl font-black text-slate-100 tabular-nums tracking-tight">
             {data.gscClicks?.toLocaleString() ?? '—'}
           </p>
         </div>
         <div>
-          <p className="text-xs text-slate-500 mb-1">GA4 Sessions</p>
-          <p className="text-lg font-semibold text-slate-100 tabular-nums">
+          <p className="text-xs text-slate-600 mb-1 font-mono">GA4 Sessions</p>
+          <p className="text-2xl font-black text-slate-100 tabular-nums tracking-tight">
             {data.ga4Sessions?.toLocaleString() ?? '—'}
           </p>
         </div>

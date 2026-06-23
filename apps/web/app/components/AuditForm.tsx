@@ -3,30 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const SOURCES = [
-  {
-    key: 'gsc',
-    label: 'Search Console',
-    icon: '⬡',
-    description: 'Impressions, clicks, position per URL',
-    ready: false,
-  },
-  {
-    key: 'ga4',
-    label: 'GA4 Analytics',
-    icon: '◈',
-    description: 'Sessions, conversions, page flows',
-    ready: false,
-  },
-  {
-    key: 'dataforseo',
-    label: 'DataForSEO',
-    icon: '⬗',
-    description: 'Keyword rankings and intent signals',
-    ready: false,
-  },
-] as const;
-
 export default function AuditForm() {
   const router = useRouter();
   const [domain, setDomain] = useState('');
@@ -35,72 +11,56 @@ export default function AuditForm() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    // Navigate to demo canvas — real audit trigger wired in Week 2
-    setTimeout(() => router.push('/canvas'), 800);
+    // Redirects to demo canvas — real audit creation wired in Week 2
+    setTimeout(() => router.push('/canvas'), 600);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4">
+
       {/* Domain input */}
-      <div>
-        <label htmlFor="domain" className="block text-xs text-slate-400 mb-2 uppercase tracking-wider">
+      <div className="space-y-2">
+        <label htmlFor="domain" className="block text-xs text-slate-500 font-mono">
           Website domain
         </label>
-        <div className="flex gap-2">
-          <input
-            id="domain"
-            type="text"
-            value={domain}
-            onChange={e => setDomain(e.target.value)}
-            placeholder="yourdomain.com"
-            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-slate-500 font-mono"
-          />
-        </div>
+        <input
+          id="domain"
+          type="text"
+          value={domain}
+          onChange={e => setDomain(e.target.value)}
+          placeholder="yourdomain.com"
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-slate-500 focus:bg-slate-800 font-mono transition-colors"
+        />
       </div>
 
-      {/* Connect sources */}
-      <div>
-        <p className="text-xs text-slate-400 mb-3 uppercase tracking-wider">Connect data sources</p>
-        <div className="space-y-2">
-          {SOURCES.map(src => (
-            <div
-              key={src.key}
-              className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-3"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-slate-600 text-sm">{src.icon}</span>
-                <div>
-                  <p className="text-sm text-slate-300">{src.label}</p>
-                  <p className="text-xs text-slate-600">{src.description}</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                disabled
-                title="OAuth verification pending — available soon"
-                className="text-xs px-3 py-1.5 rounded border border-slate-700 text-slate-600 cursor-not-allowed"
-              >
-                Connect
-              </button>
-            </div>
-          ))}
+      {/* Connect sources (pending) */}
+      <div className="flex items-start gap-3 p-3.5 rounded-lg bg-slate-900 border border-slate-800">
+        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 flex-shrink-0 mt-1" />
+        <div>
+          <p className="text-xs text-slate-400">OAuth verification pending</p>
+          <p className="text-xs text-slate-600 mt-0.5">
+            GSC and GA4 connect buttons live once Nithin's OAuth app clears verification.
+            The demo below uses real behavioral data.
+          </p>
         </div>
-        <p className="text-xs text-slate-600 mt-2">
-          OAuth verification in progress — connect buttons live soon.
-        </p>
       </div>
 
       {/* CTA */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-slate-100 hover:bg-white text-slate-950 font-semibold text-sm py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full bg-white hover:bg-slate-100 text-slate-950 font-bold text-sm py-3.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed tracking-tight"
       >
-        {loading ? 'Loading audit…' : 'View Demo Audit →'}
+        {loading
+          ? <span className="flex items-center justify-center gap-2">
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-400 border-t-slate-950 animate-spin" />
+              Loading audit…
+            </span>
+          : 'Run Demo Audit →'}
       </button>
 
-      <p className="text-xs text-center text-slate-600">
-        Demo mode — opens a pre-built audit of Demo Site Co. with real behavioral data.
+      <p className="text-xs text-center text-slate-700">
+        Opens a pre-built audit of Demo Site Co.
       </p>
     </form>
   );

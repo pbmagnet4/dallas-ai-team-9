@@ -81,7 +81,7 @@ const HEALTH_COLORS: Record<string, string> = {
 };
 
 async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promise<Node<UrlNodeData>[]> {
-  const ELK = (await import('elkjs')).default;
+  const ELK = (await import('elkjs/lib/elk.bundled.js')).default;
   const elk = new ELK();
   const graph = await elk.layout({
     id: 'root',
@@ -199,12 +199,14 @@ export default function CanvasShell() {
           ) : isEmpty ? (
             <EmptyFilterState filter={filter} onClear={() => setFilter('all')} />
           ) : (
-            <JourneyCanvas
-              key={elkReady ? 'elk' : 'initial'}
-              nodes={visibleNodes}
-              edges={visibleEdges}
-              onNodeClick={(node) => setSelectedNode(node)}
-            />
+            <div className="w-full h-full animate-fade-in">
+              <JourneyCanvas
+                key={elkReady ? 'elk' : 'initial'}
+                nodes={visibleNodes}
+                edges={visibleEdges}
+                onNodeClick={(node) => setSelectedNode(node)}
+              />
+            </div>
           )}
         </div>
 
