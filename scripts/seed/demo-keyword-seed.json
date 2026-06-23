@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "purpose": "Synthetic keyword seed for NavFlow demo. Seeded into url_signals.dseo_* fields in Supabase. Real search queries at plausible DFW home-services volumes. Supplements the 9 live DataForSEO keywords to ensure all 5 issue patterns fire in the demo.",
+    "patterns_covered": {
+      "SERP_TRAP": "/blog/water-damage-tips, /blog/what-is-hvac — high impressions, low CTR due to title/meta mismatch",
+      "INTENT_COLLISION": "/blog/water-damage-tips competing with /services/water-damage-restoration on same transactional query",
+      "INVISIBLE_CONVERTER": "/contact — converts well but near-zero keyword visibility",
+      "LEAKY_FUNNEL_ENTRY": "/services/hvac-installation — strong top-of-funnel entry, poor path to /contact",
+      "KEYWORD_CANNIBALIZATION_DRAIN": "/services/water-damage-restoration + /blog/water-damage-tips splitting authority on 'water damage dallas'"
+    },
+    "client": "Demo Site Co. (internal reference only — do not commit client name to public repo)"
+  },
+  "urls": [
+    {
+      "url": "https://goathomeservicestexas.com/services/water-damage-restoration",
+      "pattern_flags": ["LEAKY_FUNNEL_ENTRY", "KEYWORD_CANNIBALIZATION_DRAIN"],
+      "keywords": [
+        { "keyword": "water damage restoration dallas", "position": 6.4, "search_volume": 1600, "intent": "transactional", "keyword_difficulty": 48, "cpc": 12.50 },
+        { "keyword": "water damage restoration dallas tx", "position": 5.8, "search_volume": 880, "intent": "transactional", "keyword_difficulty": 46, "cpc": 11.20 },
+        { "keyword": "emergency water damage restoration dallas", "position": 8.2, "search_volume": 590, "intent": "transactional", "keyword_difficulty": 51, "cpc": 15.00 },
+        { "keyword": "flood damage repair dallas", "position": 9.1, "search_volume": 480, "intent": "transactional", "keyword_difficulty": 44, "cpc": 10.80 },
+        { "keyword": "water damage company near me", "position": 11.3, "search_volume": 2400, "intent": "transactional", "keyword_difficulty": 62, "cpc": 14.20 },
+        { "keyword": "water damage repair cost dallas", "position": 14.7, "search_volume": 320, "intent": "commercial", "keyword_difficulty": 38, "cpc": 8.40 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/blog/water-damage-tips",
+      "pattern_flags": ["INTENT_COLLISION", "KEYWORD_CANNIBALIZATION_DRAIN", "SERP_TRAP"],
+      "keywords": [
+        { "keyword": "water damage restoration dallas", "position": 8.9, "search_volume": 1600, "intent": "transactional", "keyword_difficulty": 48, "cpc": 12.50 },
+        { "keyword": "water damage repair tips", "position": 3.2, "search_volume": 390, "intent": "informational", "keyword_difficulty": 28, "cpc": 3.10 },
+        { "keyword": "what to do after water damage", "position": 4.1, "search_volume": 720, "intent": "informational", "keyword_difficulty": 32, "cpc": 2.80 },
+        { "keyword": "water damage home tips", "position": 2.8, "search_volume": 260, "intent": "informational", "keyword_difficulty": 24, "cpc": 2.20 },
+        { "keyword": "water damage insurance claim tips", "position": 6.3, "search_volume": 480, "intent": "commercial", "keyword_difficulty": 36, "cpc": 5.60 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/services/hvac-installation",
+      "pattern_flags": ["LEAKY_FUNNEL_ENTRY", "SERP_TRAP"],
+      "keywords": [
+        { "keyword": "hvac installation dallas", "position": 7.8, "search_volume": 1300, "intent": "transactional", "keyword_difficulty": 55, "cpc": 18.40 },
+        { "keyword": "hvac installation cost dallas", "position": 12.4, "search_volume": 720, "intent": "commercial", "keyword_difficulty": 42, "cpc": 11.20 },
+        { "keyword": "new hvac system installation dallas tx", "position": 9.3, "search_volume": 480, "intent": "transactional", "keyword_difficulty": 49, "cpc": 16.80 },
+        { "keyword": "hvac replacement dallas", "position": 8.1, "search_volume": 590, "intent": "transactional", "keyword_difficulty": 52, "cpc": 17.60 },
+        { "keyword": "best hvac company dallas", "position": 15.2, "search_volume": 880, "intent": "commercial", "keyword_difficulty": 61, "cpc": 14.50 },
+        { "keyword": "how much does hvac installation cost", "position": 10.6, "search_volume": 2900, "intent": "informational", "keyword_difficulty": 38, "cpc": 6.20 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/blog/what-is-hvac",
+      "pattern_flags": ["SERP_TRAP", "INTENT_COLLISION"],
+      "keywords": [
+        { "keyword": "what is hvac", "position": 3.4, "search_volume": 8100, "intent": "informational", "keyword_difficulty": 45, "cpc": 2.80 },
+        { "keyword": "hvac meaning", "position": 2.1, "search_volume": 4400, "intent": "informational", "keyword_difficulty": 35, "cpc": 1.60 },
+        { "keyword": "how does hvac work", "position": 4.8, "search_volume": 2400, "intent": "informational", "keyword_difficulty": 38, "cpc": 2.10 },
+        { "keyword": "hvac installation dallas", "position": 18.3, "search_volume": 1300, "intent": "transactional", "keyword_difficulty": 55, "cpc": 18.40 },
+        { "keyword": "hvac system types", "position": 5.2, "search_volume": 1600, "intent": "informational", "keyword_difficulty": 41, "cpc": 3.20 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/services/mold-remediation",
+      "pattern_flags": ["SERP_TRAP"],
+      "keywords": [
+        { "keyword": "mold remediation dallas", "position": 11.8, "search_volume": 880, "intent": "transactional", "keyword_difficulty": 52, "cpc": 13.60 },
+        { "keyword": "mold removal dallas tx", "position": 13.2, "search_volume": 590, "intent": "transactional", "keyword_difficulty": 49, "cpc": 12.40 },
+        { "keyword": "black mold removal dallas", "position": 9.7, "search_volume": 480, "intent": "transactional", "keyword_difficulty": 54, "cpc": 15.20 },
+        { "keyword": "mold inspection dallas", "position": 7.4, "search_volume": 720, "intent": "commercial", "keyword_difficulty": 44, "cpc": 10.80 },
+        { "keyword": "mold remediation cost dallas", "position": 16.1, "search_volume": 320, "intent": "commercial", "keyword_difficulty": 39, "cpc": 8.60 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/services/fire-restoration",
+      "pattern_flags": ["SERP_TRAP"],
+      "keywords": [
+        { "keyword": "fire damage restoration dallas", "position": 14.6, "search_volume": 480, "intent": "transactional", "keyword_difficulty": 47, "cpc": 14.80 },
+        { "keyword": "smoke damage restoration dallas", "position": 12.3, "search_volume": 320, "intent": "transactional", "keyword_difficulty": 43, "cpc": 12.20 },
+        { "keyword": "fire restoration company dallas tx", "position": 16.8, "search_volume": 260, "intent": "transactional", "keyword_difficulty": 45, "cpc": 13.40 },
+        { "keyword": "fire damage repair dallas", "position": 10.4, "search_volume": 390, "intent": "transactional", "keyword_difficulty": 48, "cpc": 15.60 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/services/ac-repair",
+      "pattern_flags": [],
+      "keywords": [
+        { "keyword": "ac repair dallas", "position": 5.2, "search_volume": 2400, "intent": "transactional", "keyword_difficulty": 58, "cpc": 22.40 },
+        { "keyword": "ac repair dallas tx", "position": 4.8, "search_volume": 1600, "intent": "transactional", "keyword_difficulty": 56, "cpc": 21.60 },
+        { "keyword": "air conditioner repair dallas", "position": 6.1, "search_volume": 1300, "intent": "transactional", "keyword_difficulty": 57, "cpc": 20.80 },
+        { "keyword": "emergency ac repair dallas", "position": 7.3, "search_volume": 880, "intent": "transactional", "keyword_difficulty": 60, "cpc": 24.00 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/contact",
+      "pattern_flags": ["INVISIBLE_CONVERTER"],
+      "keywords": [
+        { "keyword": "goat home services contact", "position": 1.2, "search_volume": 40, "intent": "navigational", "keyword_difficulty": 8, "cpc": 0.80 },
+        { "keyword": "goat home services dallas", "position": 1.8, "search_volume": 90, "intent": "navigational", "keyword_difficulty": 12, "cpc": 1.20 },
+        { "keyword": "get free estimate home restoration dallas", "position": 28.4, "search_volume": 260, "intent": "transactional", "keyword_difficulty": 36, "cpc": 9.60 },
+        { "keyword": "free home damage estimate dallas", "position": 31.2, "search_volume": 210, "intent": "commercial", "keyword_difficulty": 34, "cpc": 8.20 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/locations/dallas",
+      "pattern_flags": ["SERP_TRAP"],
+      "keywords": [
+        { "keyword": "home restoration services dallas", "position": 13.4, "search_volume": 720, "intent": "transactional", "keyword_difficulty": 53, "cpc": 11.60 },
+        { "keyword": "restoration company dallas tx", "position": 15.7, "search_volume": 590, "intent": "transactional", "keyword_difficulty": 51, "cpc": 10.40 },
+        { "keyword": "property restoration dallas", "position": 17.2, "search_volume": 480, "intent": "transactional", "keyword_difficulty": 49, "cpc": 9.80 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/locations/plano",
+      "pattern_flags": [],
+      "keywords": [
+        { "keyword": "water damage restoration plano tx", "position": 6.8, "search_volume": 480, "intent": "transactional", "keyword_difficulty": 41, "cpc": 10.20 },
+        { "keyword": "mold removal plano tx", "position": 8.4, "search_volume": 320, "intent": "transactional", "keyword_difficulty": 38, "cpc": 11.40 },
+        { "keyword": "hvac installation plano tx", "position": 7.1, "search_volume": 590, "intent": "transactional", "keyword_difficulty": 44, "cpc": 16.20 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/locations/frisco",
+      "pattern_flags": [],
+      "keywords": [
+        { "keyword": "water damage restoration frisco tx", "position": 5.9, "search_volume": 390, "intent": "transactional", "keyword_difficulty": 37, "cpc": 9.80 },
+        { "keyword": "hvac repair frisco tx", "position": 6.4, "search_volume": 480, "intent": "transactional", "keyword_difficulty": 42, "cpc": 19.60 },
+        { "keyword": "home restoration frisco", "position": 9.2, "search_volume": 210, "intent": "transactional", "keyword_difficulty": 36, "cpc": 8.40 }
+      ]
+    },
+    {
+      "url": "https://goathomeservicestexas.com/compare",
+      "pattern_flags": ["INTENT_COLLISION"],
+      "keywords": [
+        { "keyword": "best water damage company dallas", "position": 9.6, "search_volume": 480, "intent": "commercial", "keyword_difficulty": 58, "cpc": 13.80 },
+        { "keyword": "top restoration companies dallas tx", "position": 11.4, "search_volume": 320, "intent": "commercial", "keyword_difficulty": 55, "cpc": 12.20 },
+        { "keyword": "goat vs servpro dallas", "position": 4.2, "search_volume": 70, "intent": "commercial", "keyword_difficulty": 18, "cpc": 5.40 }
+      ]
+    }
+  ]
+}

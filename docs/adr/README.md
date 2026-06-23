@@ -8,3 +8,4 @@ ADRs are written before implementation begins, not after.
 | # | Title | Status | Owner |
 |---|-------|--------|-------|
 | [001](001-tech-stack.md) | Tech stack rationale | Accepted | Edward |
+| [002](002-data-strategy.md) | Data strategy: BigQuery vs GA4 API, hybrid demo | Accepted | Edward |
