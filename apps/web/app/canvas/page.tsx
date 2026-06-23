@@ -1,5 +1,3 @@
-import AppHeader from '@/components/AppHeader';
-import DemoBanner from '@/components/DemoBanner';
 import CanvasShell from './CanvasShell';
 
 export const metadata = {
@@ -8,10 +6,8 @@ export const metadata = {
 
 export default function CanvasPage() {
   return (
-    <main className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100">
-      <DemoBanner />
-      <AppHeader />
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', height: '100%' }}>
       <CanvasShell />
-    </main>
+    </div>
   );
 }

@@ -2,12 +2,15 @@
 
 import type { Node } from '@xyflow/react';
 import type { UrlNodeData } from './UrlNode';
+import { Sparkles } from 'lucide-react';
 
 interface AuditSummaryProps {
   nodes: Node<UrlNodeData>[];
+  onAIToggle?: () => void;
+  aiPanelOpen?: boolean;
 }
 
-export default function AuditSummary({ nodes }: AuditSummaryProps) {
+export default function AuditSummary({ nodes, onAIToggle, aiPanelOpen }: AuditSummaryProps) {
   const critical    = nodes.filter(n => n.data.health === 'critical').length;
   const leaking     = nodes.filter(n => n.data.health === 'leaking').length;
   const opportunity = nodes.filter(n => n.data.health === 'opportunity').length;
@@ -16,29 +19,79 @@ export default function AuditSummary({ nodes }: AuditSummaryProps) {
     .reduce((sum, n) => sum + (n.data.ga4Sessions ?? 0), 0);
 
   const stats = [
-    { label: 'URLs Audited',     value: String(nodes.length),               color: '#94a3b8', dimmed: false },
-    { label: 'Critical',         value: String(critical),                   color: '#f87171', dimmed: critical === 0 },
-    { label: 'Leaking',          value: String(leaking),                    color: '#facc15', dimmed: leaking === 0 },
-    { label: 'Opportunities',    value: String(opportunity),                color: '#60a5fa', dimmed: opportunity === 0 },
-    { label: 'Sessions at Risk', value: sessionsAtRisk.toLocaleString(),    color: '#fb923c', dimmed: sessionsAtRisk === 0 },
+    { label: 'URLs Audited',     value: nodes.length,      color: 'var(--ink-muted)',  always: true },
+    { label: 'Critical',         value: critical,          color: '#dc2626', },
+    { label: 'Leaking',          value: leaking,           color: '#ca8a04', },
+    { label: 'Opportunities',    value: opportunity,       color: 'var(--accent)', },
+    { label: 'Sessions at Risk', value: sessionsAtRisk,    color: '#ea580c', },
   ];
 
   return (
-    <div className="flex-shrink-0 border-b border-slate-800 bg-slate-950/80 backdrop-blur-sm flex items-center px-6 gap-8 h-11 animate-fade-in">
-      {stats.map(({ label, value, color, dimmed }) => (
-        <div key={label} className="flex items-baseline gap-1.5">
-          <span
-            className="text-sm font-bold tabular-nums transition-colors"
-            style={{ color: dimmed ? '#334155' : color }}
+    <div
+      className="animate-fade-in"
+      style={{
+        flexShrink: 0,
+        height: 40,
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--surface)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 14px',
+        gap: 0,
+      }}
+    >
+      {stats.map(({ label, value, color, always }, i) => {
+        const dimmed = !always && value === 0;
+        return (
+          <div
+            key={label}
+            style={{
+              display: 'flex', alignItems: 'baseline', gap: 5,
+              padding: '0 12px',
+              borderRight: i < stats.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+            }}
           >
-            {value}
-          </span>
-          <span className="text-xs" style={{ color: dimmed ? '#1e293b' : '#475569' }}>{label}</span>
-        </div>
-      ))}
-      <div className="ml-auto flex items-center gap-1.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-        <span className="text-xs text-slate-700 font-mono">demo mode</span>
+            <span style={{
+              fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums',
+              color: dimmed ? 'var(--border)' : color,
+              transition: 'color 0.2s',
+            }}>
+              {typeof value === 'number' ? value.toLocaleString() : value}
+            </span>
+            <span style={{
+              fontSize: 11,
+              color: dimmed ? 'var(--border-subtle)' : 'var(--ink-dim)',
+              transition: 'color 0.2s',
+            }}>
+              {label}
+            </span>
+          </div>
+        );
+      })}
+
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 11, color: 'var(--ink-dim)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} />
+          demo
+        </span>
+        {onAIToggle && (
+          <button
+            onClick={onAIToggle}
+            title="AI Assistant"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '4px 9px', borderRadius: 5,
+              border: `1px solid ${aiPanelOpen ? 'var(--accent)' : 'var(--border)'}`,
+              background: aiPanelOpen ? 'var(--accent-subtle)' : 'transparent',
+              color: aiPanelOpen ? 'var(--accent)' : 'var(--ink-dim)',
+              fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
+              transition: 'all 0.12s',
+            }}
+          >
+            <Sparkles size={12} strokeWidth={1.5} />
+            <span>AI</span>
+          </button>
+        )}
       </div>
     </div>
   );

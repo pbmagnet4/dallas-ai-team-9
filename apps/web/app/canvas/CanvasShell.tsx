@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Node, Edge } from '@xyflow/react';
+import { ReactFlowProvider, type Node, type Edge } from '@xyflow/react';
 import JourneyCanvas from '@/components/JourneyCanvas';
 import AuditSummary from '@/components/AuditSummary';
 import IssuePatternLegend from '@/components/IssuePatternLegend';
 import type { UrlNodeData } from '@/components/UrlNode';
 import NodeSidebar from './NodeSidebar';
+import ToolStrip from './ToolStrip';
+import AIPanel from './AIPanel';
 
 type HealthFilter = 'all' | 'critical' | 'leaking' | 'opportunity' | 'healthy';
+type CanvasTool = 'select' | 'pan';
 
-// Mock data — replaced by live Supabase query in Week 2
 const BASE_NODES: Node<UrlNodeData>[] = [
   {
     id: '1', type: 'url', position: { x: 0, y: 0 },
@@ -58,26 +60,27 @@ const BASE_NODES: Node<UrlNodeData>[] = [
 ];
 
 const BASE_EDGES: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2', animated: true,  style: { strokeWidth: 3 } },
-  { id: 'e1-3', source: '1', target: '3', animated: true,  style: { strokeWidth: 2 } },
+  { id: 'e1-2', source: '1', target: '2', animated: true,  style: { strokeWidth: 2 } },
+  { id: 'e1-3', source: '1', target: '3', animated: true,  style: { strokeWidth: 1.5 } },
   { id: 'e3-4', source: '3', target: '4',                  style: { strokeWidth: 1 } },
-  { id: 'e2-4', source: '2', target: '4',                  style: { strokeWidth: 2 } },
+  { id: 'e2-4', source: '2', target: '4',                  style: { strokeWidth: 1.5 } },
   { id: 'e2-5', source: '2', target: '5',                  style: { strokeWidth: 1 } },
 ];
 
-const FILTER_OPTIONS: { value: HealthFilter; label: string; color: string }[] = [
-  { value: 'all',         label: 'All',         color: 'border-slate-600 text-slate-300' },
-  { value: 'critical',    label: 'Critical',    color: 'border-red-500 text-red-400' },
-  { value: 'leaking',     label: 'Leaking',     color: 'border-yellow-500 text-yellow-400' },
-  { value: 'opportunity', label: 'Opportunity', color: 'border-blue-500 text-blue-400' },
-  { value: 'healthy',     label: 'Healthy',     color: 'border-green-500 text-green-400' },
+const FILTER_OPTIONS: { value: HealthFilter; label: string }[] = [
+  { value: 'all',         label: 'All' },
+  { value: 'critical',    label: 'Critical' },
+  { value: 'leaking',     label: 'Leaking' },
+  { value: 'opportunity', label: 'Opportunity' },
+  { value: 'healthy',     label: 'Healthy' },
 ];
 
-const HEALTH_COLORS: Record<string, string> = {
-  healthy:     '#22c55e',
-  leaking:     '#eab308',
-  critical:    '#ef4444',
-  opportunity: '#3b82f6',
+const FILTER_COLORS: Record<HealthFilter, string> = {
+  all:         'var(--ink-dim)',
+  critical:    '#dc2626',
+  leaking:     '#ca8a04',
+  opportunity: 'var(--accent)',
+  healthy:     '#16a34a',
 };
 
 async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promise<Node<UrlNodeData>[]> {
@@ -92,7 +95,7 @@ async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promis
       'elk.layered.spacing.nodeNodeBetweenLayers': '100',
       'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
     },
-    children: nodes.map(n => ({ id: n.id, width: 240, height: 90 })),
+    children: nodes.map(n => ({ id: n.id, width: 220, height: 88 })),
     edges: edges.map(e => ({ id: e.id, sources: [e.source], targets: [e.target] })),
   });
   return nodes.map(n => {
@@ -103,15 +106,15 @@ async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promis
 
 function CanvasSkeleton() {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-slate-950">
-      <div className="flex gap-16 items-center opacity-40">
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+      <div style={{ display: 'flex', gap: 64, alignItems: 'center', opacity: 0.3 }}>
         {[80, 120, 80].map((h, col) => (
-          <div key={col} className="flex flex-col gap-6">
+          <div key={col} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {Array.from({ length: col === 1 ? 2 : 1 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-lg animate-pulse bg-slate-800"
-                style={{ width: 180, height: h }}
+                style={{ width: 180, height: h, borderRadius: 8, background: 'var(--surface-raised)' }}
+                className="animate-pulse"
               />
             ))}
           </div>
@@ -123,14 +126,16 @@ function CanvasSkeleton() {
 
 function EmptyFilterState({ filter, onClear }: { filter: string; onClear: () => void }) {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-center">
-      <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
-        <span className="text-slate-500 text-xl">∅</span>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface-raised)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: 18, color: 'var(--ink-dim)' }}>∅</span>
       </div>
-      <p className="text-sm text-slate-400">No <span className="font-medium text-slate-300">{filter}</span> pages found</p>
+      <p style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
+        No <strong>{filter}</strong> pages found
+      </p>
       <button
         onClick={onClear}
-        className="text-xs text-slate-500 hover:text-slate-300 underline underline-offset-2"
+        style={{ fontSize: 11, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 }}
       >
         Clear filter
       </button>
@@ -138,9 +143,11 @@ function EmptyFilterState({ filter, onClear }: { filter: string; onClear: () => 
   );
 }
 
-export default function CanvasShell() {
+function CanvasInner() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [filter, setFilter] = useState<HealthFilter>('all');
+  const [activeTool, setActiveTool] = useState<CanvasTool>('select');
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [layoutNodes, setLayoutNodes] = useState<Node<UrlNodeData>[]>(BASE_NODES);
   const [elkReady, setElkReady] = useState(false);
 
@@ -164,34 +171,50 @@ export default function CanvasShell() {
   const isEmpty = elkReady && visibleNodes.length === 0;
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
-      <AuditSummary nodes={layoutNodes} />
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+      <AuditSummary
+        nodes={layoutNodes}
+        onAIToggle={() => setAiPanelOpen(v => !v)}
+        aiPanelOpen={aiPanelOpen}
+      />
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 relative">
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Tool strip */}
+        <ToolStrip activeTool={activeTool} onToolChange={setActiveTool} />
+
+        {/* Canvas area */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }} className="dot-grid">
           <IssuePatternLegend />
 
-          {/* Filter pill bar */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-full px-4 py-2">
-            <span className="text-xs text-slate-500 mr-1">Filter:</span>
-            {FILTER_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setFilter(opt.value)}
-                className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                  filter === opt.value
-                    ? `${opt.color} bg-slate-800`
-                    : 'border-transparent text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                {opt.label}
-                {opt.value !== 'all' && (
-                  <span className="ml-1 text-slate-600">
-                    ({layoutNodes.filter(n => (n.data as UrlNodeData).health === opt.value).length})
-                  </span>
-                )}
-              </button>
-            ))}
+          {/* Filter bar */}
+          <div style={{
+            position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+            zIndex: 10, display: 'flex', alignItems: 'center', gap: 2,
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 20, padding: '4px 8px',
+            boxShadow: 'var(--shadow-md)',
+          }}>
+            <span style={{ fontSize: 11, color: 'var(--ink-dim)', padding: '0 6px' }}>Filter:</span>
+            {FILTER_OPTIONS.map(opt => {
+              const active = filter === opt.value;
+              const count = opt.value === 'all' ? undefined : layoutNodes.filter(n => (n.data as UrlNodeData).health === opt.value).length;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setFilter(opt.value)}
+                  style={{
+                    fontSize: 11, padding: '4px 10px', borderRadius: 14,
+                    border: `1px solid ${active ? FILTER_COLORS[opt.value] : 'transparent'}`,
+                    background: active ? `color-mix(in srgb, ${FILTER_COLORS[opt.value]} 10%, transparent)` : 'transparent',
+                    color: active ? FILTER_COLORS[opt.value] : 'var(--ink-dim)',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'all 0.12s',
+                  }}
+                >
+                  {opt.label}{count !== undefined && <span style={{ marginLeft: 4, opacity: 0.6 }}>({count})</span>}
+                </button>
+              );
+            })}
           </div>
 
           {!elkReady ? (
@@ -199,18 +222,31 @@ export default function CanvasShell() {
           ) : isEmpty ? (
             <EmptyFilterState filter={filter} onClear={() => setFilter('all')} />
           ) : (
-            <div className="w-full h-full animate-fade-in">
+            <div style={{ width: '100%', height: '100%' }} className="animate-fade-in">
               <JourneyCanvas
                 key={elkReady ? 'elk' : 'initial'}
                 nodes={visibleNodes}
                 edges={visibleEdges}
-                onNodeClick={(node) => setSelectedNode(node)}
+                activeTool={activeTool}
+                onNodeClick={node => setSelectedNode(node)}
               />
             </div>
           )}
         </div>
 
-        {selectedNode && (
+        {/* AI Panel */}
+        {aiPanelOpen && (
+          <AIPanel
+            onClose={() => setAiPanelOpen(false)}
+            currentFilter={filter}
+            onCommand={cmd => {
+              if (cmd.type === 'filter') setFilter(cmd.filter);
+            }}
+          />
+        )}
+
+        {/* Node sidebar — only when no AI panel, or alongside it */}
+        {selectedNode && !aiPanelOpen && (
           <NodeSidebar
             node={selectedNode as Node<UrlNodeData>}
             onClose={() => setSelectedNode(null)}
@@ -218,5 +254,13 @@ export default function CanvasShell() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CanvasShell() {
+  return (
+    <ReactFlowProvider>
+      <CanvasInner />
+    </ReactFlowProvider>
   );
 }

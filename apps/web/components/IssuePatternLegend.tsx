@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { X } from 'lucide-react';
 import { PATTERN_META } from '@/types/navflow';
 import type { IssuePattern } from '@/types/navflow';
 
@@ -16,58 +17,82 @@ export default function IssuePatternLegend() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="absolute top-4 left-4 z-10 animate-fade-in">
+    <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }} className="animate-fade-in">
 
-      {/* Collapsed: 5-dot strip */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-400 hover:border-slate-500 hover:text-slate-300 transition-colors"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '5px 10px', borderRadius: 6,
+            border: '1px solid var(--border)', background: 'var(--surface)',
+            color: 'var(--ink-dim)', fontSize: 11, cursor: 'pointer',
+            boxShadow: 'var(--shadow-sm)', transition: 'border-color 0.12s, color 0.12s',
+            fontFamily: 'inherit',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ink-dim)'; e.currentTarget.style.color = 'var(--ink-muted)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--ink-dim)'; }}
         >
-          <span className="text-slate-600 text-xs font-mono mr-0.5">patterns</span>
+          <span style={{ fontSize: 10, color: 'var(--ink-dim)' }}>patterns</span>
           {PATTERN_ORDER.map(p => (
             <span
               key={p}
               title={PATTERN_META[p].label}
-              style={{ width: 8, height: 8, borderRadius: '50%', background: PATTERN_META[p].color, flexShrink: 0 }}
+              style={{ width: 7, height: 7, borderRadius: '50%', background: PATTERN_META[p].color, flexShrink: 0 }}
             />
           ))}
-          <span className="text-slate-700 ml-0.5">↗</span>
         </button>
       )}
 
-      {/* Expanded panel */}
       {open && (
-        <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-700 rounded-lg w-72 shadow-xl animate-fade-up">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
-            <span className="text-xs font-mono text-slate-400">Issue Patterns</span>
+        <div
+          className="animate-fade-up"
+          style={{
+            width: 268, borderRadius: 8,
+            border: '1px solid var(--border)', background: 'var(--surface)',
+            boxShadow: 'var(--shadow-panel)', overflow: 'hidden',
+          }}
+        >
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '9px 12px', borderBottom: '1px solid var(--border)',
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--ink-muted)' }}>
+              Issue Patterns
+            </span>
             <button
               onClick={() => setOpen(false)}
-              className="text-slate-600 hover:text-slate-300 transition-colors w-5 h-5 flex items-center justify-center rounded hover:bg-slate-800"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 22, height: 22, borderRadius: 4, border: 'none',
+                background: 'transparent', color: 'var(--ink-dim)', cursor: 'pointer',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-raised)'; e.currentTarget.style.color = 'var(--ink)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-dim)'; }}
             >
-              ×
+              <X size={12} />
             </button>
           </div>
-          <div className="p-2">
+          <div style={{ padding: '6px 8px' }}>
             {PATTERN_ORDER.map(p => {
               const meta = PATTERN_META[p];
               return (
                 <div
                   key={p}
-                  className="flex items-start gap-3 px-3 py-2.5 rounded-lg"
-                  style={{ background: meta.bg }}
+                  style={{
+                    display: 'flex', gap: 10, padding: '7px 8px', borderRadius: 6,
+                    background: `color-mix(in srgb, ${meta.color} 6%, transparent)`,
+                    marginBottom: 2,
+                  }}
                 >
-                  <span
-                    style={{
-                      width: 7, height: 7, borderRadius: '50%',
-                      background: meta.color, flexShrink: 0, marginTop: 5,
-                    }}
-                  />
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.color, flexShrink: 0, marginTop: 3 }} />
                   <div>
-                    <p className="text-xs font-semibold leading-none" style={{ color: meta.color }}>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: meta.color, lineHeight: 1.2 }}>
                       {meta.label}
                     </p>
-                    <p className="text-xs text-slate-500 leading-relaxed mt-1">{meta.description}</p>
+                    <p style={{ fontSize: 10, color: 'var(--ink-dim)', lineHeight: 1.5, marginTop: 2 }}>
+                      {meta.description}
+                    </p>
                   </div>
                 </div>
               );

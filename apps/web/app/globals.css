@@ -1,39 +1,86 @@
 @import "tailwindcss";
 
-/* ── Design tokens ─────────────────────────────────────────────────────────── */
+/* ── Design tokens: Light (default) ───────────────────────────────────────── */
 :root {
-  --bg:              #020617;
-  --surface:         #0f172a;
-  --surface-raised:  #1e293b;
-  --border:          #334155;
-  --border-subtle:   #1e293b;
-  --ink:             #f1f5f9;
-  --ink-muted:       #94a3b8;
-  --ink-dim:         #64748b;
+  --bg:              #ffffff;
+  --bg-subtle:       #f7f8fa;
+  --surface:         #ffffff;
+  --surface-raised:  #f0f2f5;
+  --border:          #dde1e7;
+  --border-subtle:   #eceff3;
+  --ink:             #111827;
+  --ink-muted:       #6b7280;
+  --ink-dim:         #9ca3af;
+  --accent:          #2563eb;
+  --accent-muted:    #3b82f6;
+  --accent-subtle:   #eff6ff;
+  --accent-ink:      #ffffff;
 
-  --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
-  --ease-out-quint:  cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-sm:    0 1px 2px rgba(17, 24, 39, 0.06);
+  --shadow-md:    0 1px 3px rgba(17, 24, 39, 0.1), 0 1px 2px rgba(17, 24, 39, 0.06);
+  --shadow-node:  0 2px 8px rgba(17, 24, 39, 0.08), 0 1px 3px rgba(17, 24, 39, 0.05);
+  --shadow-panel: 0 8px 24px rgba(17, 24, 39, 0.12), 0 2px 8px rgba(17, 24, 39, 0.06);
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Design tokens: Dark ──────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:              #0d1117;
+    --bg-subtle:       #161b22;
+    --surface:         #161b22;
+    --surface-raised:  #21262d;
+    --border:          #30363d;
+    --border-subtle:   #21262d;
+    --ink:             #e6edf3;
+    --ink-muted:       #8b949e;
+    --ink-dim:         #656d76;
+    --accent:          #388bfd;
+    --accent-muted:    #58a6ff;
+    --accent-subtle:   #1c2d4e;
+    --accent-ink:      #ffffff;
+
+    --shadow-sm:    0 1px 2px rgba(1, 4, 9, 0.4);
+    --shadow-md:    0 1px 3px rgba(1, 4, 9, 0.5), 0 1px 2px rgba(1, 4, 9, 0.4);
+    --shadow-node:  0 2px 8px rgba(1, 4, 9, 0.5), 0 1px 3px rgba(1, 4, 9, 0.4);
+    --shadow-panel: 0 8px 24px rgba(1, 4, 9, 0.6), 0 2px 8px rgba(1, 4, 9, 0.5);
+  }
 }
 
 @theme inline {
-  --color-background: var(--bg);
-  --color-foreground: var(--ink);
-  --font-sans: var(--font-geist-sans);
+  --color-bg:              var(--bg);
+  --color-bg-subtle:       var(--bg-subtle);
+  --color-surface:         var(--surface);
+  --color-surface-raised:  var(--surface-raised);
+  --color-border:          var(--border);
+  --color-border-subtle:   var(--border-subtle);
+  --color-ink:             var(--ink);
+  --color-ink-muted:       var(--ink-muted);
+  --color-ink-dim:         var(--ink-dim);
+  --color-accent:          var(--accent);
+  --color-accent-subtle:   var(--accent-subtle);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
-html, body { background: var(--bg); color: var(--ink); }
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+}
 
-/* ── Dot-grid background ────────────────────────────────────────────────────── */
+/* ── Canvas dot grid ────────────────────────────────────────────────────────── */
 .dot-grid {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
   background-size: 24px 24px;
+  background-color: var(--bg);
 }
 
 /* ── Keyframes ──────────────────────────────────────────────────────────────── */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fade-in {
@@ -41,55 +88,70 @@ html, body { background: var(--bg); color: var(--ink); }
   to   { opacity: 1; }
 }
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(24px); }
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
 /* ── Animation utilities ────────────────────────────────────────────────────── */
-.animate-fade-up        { animation: fade-up        0.5s var(--ease-out-quint) both; }
-.animate-fade-in        { animation: fade-in        0.3s var(--ease-out-quart) both; }
-.animate-slide-in-right { animation: slide-in-right 0.28s var(--ease-out-expo)  both; }
+.animate-fade-up        { animation: fade-up        0.4s var(--ease-out-quint) both; }
+.animate-fade-in        { animation: fade-in        0.25s var(--ease-out-quart) both; }
+.animate-slide-in-right { animation: slide-in-right 0.25s var(--ease-out-expo) both; }
+.animate-slide-in-left  { animation: slide-in-left  0.25s var(--ease-out-expo) both; }
 
-.stagger-1 { animation-delay:  80ms; }
-.stagger-2 { animation-delay: 160ms; }
-.stagger-3 { animation-delay: 240ms; }
-.stagger-4 { animation-delay: 320ms; }
-.stagger-5 { animation-delay: 400ms; }
+.stagger-1 { animation-delay:  60ms; }
+.stagger-2 { animation-delay: 120ms; }
+.stagger-3 { animation-delay: 180ms; }
+.stagger-4 { animation-delay: 240ms; }
+.stagger-5 { animation-delay: 300ms; }
 
-/* ── React Flow theming ─────────────────────────────────────────────────────── */
+/* ── React Flow overrides ───────────────────────────────────────────────────── */
 :where(.react-flow__controls) {
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  box-shadow: 0 1px 12px rgba(0,0,0,0.5);
-  overflow: hidden;
-}
-:where(.react-flow__controls-button) {
-  background: #0f172a;
-  border-bottom: 1px solid #1e293b;
-  fill: #64748b;
-  width: 24px;
-  height: 24px;
-}
-:where(.react-flow__controls-button):hover {
-  background: #1e293b;
-  fill: #94a3b8;
-}
-:where(.react-flow__controls-button):last-child {
-  border-bottom: none;
+  display: none; /* replaced by ToolStrip */
 }
 :where(.react-flow__minimap) {
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #334155;
-  background: #0f172a;
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
 :where(.react-flow__attribution) {
   display: none;
 }
 :where(.react-flow__edge-path) {
-  stroke-opacity: 0.4;
+  stroke: var(--border);
+  stroke-opacity: 1;
 }
+:where(.react-flow__edge.animated .react-flow__edge-path) {
+  stroke: var(--ink-dim);
+}
+:where(.react-flow__edge.selected .react-flow__edge-path) {
+  stroke: var(--accent);
+}
+:where(.react-flow__handle) {
+  background: var(--border);
+  border: 2px solid var(--surface);
+  width: 8px;
+  height: 8px;
+}
+:where(.react-flow__handle:hover) {
+  background: var(--accent);
+}
+:where(.react-flow__pane) {
+  background: transparent;
+}
+:where(.react-flow__background) {
+  background: transparent;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-dim); }
 
 /* ── Reduced motion ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
