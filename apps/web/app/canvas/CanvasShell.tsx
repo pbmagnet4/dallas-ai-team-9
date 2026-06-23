@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import JourneyCanvas from '@/components/JourneyCanvas';
 import AuditSummary from '@/components/AuditSummary';
+import IssuePatternLegend from '@/components/IssuePatternLegend';
 import type { UrlNodeData } from '@/components/UrlNode';
 import NodeSidebar from './NodeSidebar';
 
@@ -168,15 +169,7 @@ export default function CanvasShell() {
 
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 relative">
-          {/* Legend */}
-          <div className="absolute top-4 right-4 z-10 flex gap-3 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-xs text-slate-400">
-            {Object.entries(HEALTH_COLORS).map(([key, color]) => (
-              <span key={key} className="flex items-center gap-1.5 capitalize">
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'inline-block' }} />
-                {key}
-              </span>
-            ))}
-          </div>
+          <IssuePatternLegend />
 
           {/* Filter pill bar */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-full px-4 py-2">
