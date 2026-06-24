@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, LayoutGrid, AlertTriangle, Database, Settings, Sparkles } from 'lucide-react';
+import { Map, LayoutGrid, AlertTriangle, Database, Settings, Sparkles, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 const NAV = [
   { href: '/canvas',   icon: Map,           label: 'Canvas' },
@@ -19,6 +20,7 @@ interface AppShellProps {
 
 export default function AppShell({ children, canvasControls }: AppShellProps) {
   const pathname = usePathname();
+  const { theme, toggle } = useTheme();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)' }}>
@@ -46,6 +48,35 @@ export default function AppShell({ children, canvasControls }: AppShellProps) {
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
           {canvasControls}
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggle}
+            title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 32, height: 32, borderRadius: 6,
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--ink-dim)',
+              cursor: 'pointer',
+              transition: 'color 0.12s, background 0.12s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = 'var(--ink)';
+              e.currentTarget.style.background = 'var(--surface-raised)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = 'var(--ink-dim)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            {theme === 'light'
+              ? <Moon size={14} strokeWidth={1.75} />
+              : <Sun  size={14} strokeWidth={1.75} />
+            }
+          </button>
+
           <button
             title="AI Assistant"
             style={{
