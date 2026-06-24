@@ -169,9 +169,13 @@ function getMockResponse(input: string): Message {
   };
 }
 
-// ── Fix Plan render ───────────────────────────────────────────────────────────
+// ── Fix Plan flow diagram ─────────────────────────────────────────────────────
 
 function FixPlanCard({ plan }: { plan: FixPlan }) {
+  const patternColor = plan.pattern === 'SERP_TRAP' ? '#f97316'
+    : plan.pattern === 'LEAKY_FUNNEL_ENTRY' ? '#eab308'
+    : 'var(--accent)';
+
   return (
     <div style={{
       border: '1px solid var(--border)', borderRadius: 8,
@@ -180,72 +184,126 @@ function FixPlanCard({ plan }: { plan: FixPlan }) {
       {/* Header */}
       <div style={{
         padding: '8px 12px', borderBottom: '1px solid var(--border)',
-        background: 'var(--surface)',
+        background: `color-mix(in srgb, ${patternColor} 6%, var(--surface))`,
         display: 'flex', flexDirection: 'column', gap: 2,
       }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)' }}>
-          Fix Plan
-        </span>
-        <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)' }}>
+            Fix Plan
+          </span>
+          <span style={{
+            fontSize: 8.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+            color: patternColor,
+            background: `color-mix(in srgb, ${patternColor} 12%, transparent)`,
+            padding: '1px 5px', borderRadius: 3,
+          }}>
+            {plan.pattern.replace(/_/g, ' ')}
+          </span>
+        </div>
+        <code style={{ fontSize: 9.5, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
           {plan.url}
-        </span>
+        </code>
       </div>
 
-      {/* Steps */}
-      <div style={{ padding: '8px 0' }}>
+      {/* Flow node cards */}
+      <div style={{ padding: '10px 10px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
         {plan.steps.map((step, i) => (
-          <FixStep key={i} step={step} index={i} isLast={i === plan.steps.length - 1} />
+          <FlowStepNode
+            key={i}
+            step={step}
+            stepNum={i + 1}
+            isLast={i === plan.steps.length - 1}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function FixStep({ step, index, isLast }: { step: FixPlanStep; index: number; isLast: boolean }) {
+function FlowStepNode({ step, stepNum, isLast }: { step: FixPlanStep; stepNum: number; isLast: boolean }) {
   const meta = STEP_META[step.kind];
   const Icon = meta.icon;
 
   return (
-    <div style={{ display: 'flex', gap: 0 }}>
-      {/* Timeline column */}
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {/* Node card */}
       <div style={{
-        width: 36, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center',
+        width: '100%',
+        border: `1px solid color-mix(in srgb, ${meta.color} 28%, var(--border))`,
+        borderRadius: 6, overflow: 'hidden', background: 'var(--surface)',
       }}>
+        {/* Kind header */}
         <div style={{
-          width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-          background: `color-mix(in srgb, ${meta.color} 12%, transparent)`,
-          border: `1.5px solid color-mix(in srgb, ${meta.color} 35%, transparent)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          marginTop: 6,
+          padding: '5px 8px',
+          background: `color-mix(in srgb, ${meta.color} 8%, var(--surface))`,
+          borderBottom: `1px solid color-mix(in srgb, ${meta.color} 18%, var(--border))`,
+          display: 'flex', alignItems: 'center', gap: 5,
         }}>
-          <Icon size={10} strokeWidth={2} style={{ color: meta.color }} />
-        </div>
-        {!isLast && (
-          <div style={{ width: 1.5, flex: 1, background: 'var(--border-subtle)', marginTop: 2, marginBottom: 0, minHeight: 8 }} />
-        )}
-      </div>
-
-      {/* Content */}
-      <div style={{ flex: 1, paddingRight: 12, paddingTop: 6, paddingBottom: isLast ? 4 : 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.04em',
-            color: meta.color, textTransform: 'uppercase' as const }}>
+          <Icon size={10} strokeWidth={2.5} style={{ color: meta.color }} />
+          <span style={{
+            fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+            textTransform: 'uppercase' as const, color: meta.color, flex: 1,
+          }}>
             {meta.label}
           </span>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--ink)' }}>
-            {step.title}
+          <span style={{
+            fontSize: 9, color: 'var(--ink-dim)', fontVariantNumeric: 'tabular-nums',
+          }}>
+            {stepNum}
           </span>
         </div>
-        <p style={{ fontSize: 11, color: 'var(--ink-muted)', lineHeight: 1.5, margin: 0 }}>
-          {step.detail}
-        </p>
-        {step.branch && (
-          <div style={{ marginTop: 5, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 10, color: '#16a34a' }}>✓ {step.branch.yes}</span>
-            <span style={{ fontSize: 10, color: '#ca8a04' }}>✗ {step.branch.no}</span>
+
+        {/* Content */}
+        <div style={{ padding: '6px 8px 7px' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 3, lineHeight: 1.3 }}>
+            {step.title}
           </div>
-        )}
+          <div style={{ fontSize: 10, color: 'var(--ink-muted)', lineHeight: 1.5 }}>
+            {step.detail}
+          </div>
+
+          {/* Branch outcomes — 2-column grid */}
+          {step.branch && (
+            <div style={{
+              marginTop: 7,
+              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5,
+              borderTop: '1px solid var(--border-subtle)', paddingTop: 7,
+            }}>
+              <div style={{
+                padding: '4px 7px', borderRadius: 4, fontSize: 9.5, lineHeight: 1.4,
+                background: 'color-mix(in srgb, #16a34a 8%, transparent)',
+                border: '1px solid color-mix(in srgb, #16a34a 25%, transparent)',
+                color: '#16a34a',
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 1 }}>✓ Yes</div>
+                {step.branch.yes}
+              </div>
+              <div style={{
+                padding: '4px 7px', borderRadius: 4, fontSize: 9.5, lineHeight: 1.4,
+                background: 'color-mix(in srgb, #ca8a04 8%, transparent)',
+                border: '1px solid color-mix(in srgb, #ca8a04 25%, transparent)',
+                color: '#ca8a04',
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 1 }}>✗ No</div>
+                {step.branch.no}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Connector arrow */}
+      {!isLast && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 14, flexShrink: 0 }}>
+          <div style={{ width: 1, flex: 1, background: 'var(--border)' }} />
+          <div style={{
+            width: 0, height: 0,
+            borderLeft: '4px solid transparent',
+            borderRight: '4px solid transparent',
+            borderTop: '5px solid var(--border)',
+          }} />
+        </div>
+      )}
     </div>
   );
 }

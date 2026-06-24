@@ -105,7 +105,7 @@ async function applyElkLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Promis
       'elk.layered.spacing.nodeNodeBetweenLayers': '100',
       'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
     },
-    children: nodes.map(n => ({ id: n.id, width: 220, height: 88 })),
+    children: nodes.map(n => ({ id: n.id, width: 220, height: 104 })),
     edges: edges.map(e => ({ id: e.id, sources: [e.source], targets: [e.target] })),
   });
   return nodes.map(n => {
@@ -119,7 +119,7 @@ async function applyDagreLayout(nodes: Node<UrlNodeData>[], edges: Edge[]): Prom
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: 'TB', nodesep: 60, ranksep: 90 });
-  nodes.forEach(n => g.setNode(n.id, { width: 220, height: 88 }));
+  nodes.forEach(n => g.setNode(n.id, { width: 220, height: 104 }));
   edges.forEach(e => g.setEdge(e.source, e.target));
   dagre.layout(g);
   return nodes.map(n => {
