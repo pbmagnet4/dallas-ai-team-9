@@ -1,9 +1,9 @@
 export type IssuePattern =
-  | 'SERP_TRAP'
-  | 'INTENT_COLLISION'
-  | 'INVISIBLE_CONVERTER'
-  | 'LEAKY_FUNNEL_ENTRY'
-  | 'KEYWORD_CANNIBALIZATION_DRAIN';
+  | 'BURIED_PAGE'
+  | 'RANKING_OPPORTUNITY'
+  | 'ENGAGEMENT_DRAIN'
+  | 'ORPHAN_PAGE'
+  | 'KEYWORD_CANNIBALIZATION';
 
 export type DataSource = 'gsc' | 'ga4' | 'dataforseo' | 'crawl4ai' | 'tracardi';
 
@@ -20,35 +20,35 @@ export interface ActionBrief {
 }
 
 export const PATTERN_META: Record<IssuePattern, { label: string; color: string; bg: string; description: string }> = {
-  SERP_TRAP: {
-    label: 'SERP Trap',
-    color: '#f97316',
-    bg: 'rgba(249,115,22,0.12)',
-    description: 'High impressions, low CTR — title or meta doesn\'t match search intent.',
-  },
-  INTENT_COLLISION: {
-    label: 'Intent Collision',
-    color: '#a855f7',
-    bg: 'rgba(168,85,247,0.12)',
-    description: 'Informational page ranking for transactional queries, or vice versa.',
-  },
-  INVISIBLE_CONVERTER: {
-    label: 'Invisible Converter',
-    color: '#3b82f6',
-    bg: 'rgba(59,130,246,0.12)',
-    description: 'High-converting page with near-zero keyword visibility.',
-  },
-  LEAKY_FUNNEL_ENTRY: {
-    label: 'Leaky Funnel Entry',
+  BURIED_PAGE: {
+    label: 'Buried Page',
     color: '#eab308',
     bg: 'rgba(234,179,8,0.12)',
-    description: 'Strong entry traffic but poor internal path to conversion.',
+    description: 'High-traffic entry point with poor internal path to conversion — users land but have nowhere to go.',
   },
-  KEYWORD_CANNIBALIZATION_DRAIN: {
-    label: 'Cannibalization',
+  RANKING_OPPORTUNITY: {
+    label: 'Ranking Opportunity',
+    color: '#f97316',
+    bg: 'rgba(249,115,22,0.12)',
+    description: 'High impressions, low CTR — the page appears in search but the title or meta doesn\'t earn the click.',
+  },
+  ENGAGEMENT_DRAIN: {
+    label: 'Engagement Drain',
+    color: '#a855f7',
+    bg: 'rgba(168,85,247,0.12)',
+    description: 'Informational page ranking for transactional queries, or vice versa — intent mismatch kills engagement.',
+  },
+  ORPHAN_PAGE: {
+    label: 'Orphan Page',
+    color: '#3b82f6',
+    bg: 'rgba(59,130,246,0.12)',
+    description: 'High-converting page with near-zero internal links pointing to it — invisible to users navigating the site.',
+  },
+  KEYWORD_CANNIBALIZATION: {
+    label: 'Keyword Cannibalization',
     color: '#ef4444',
     bg: 'rgba(239,68,68,0.12)',
-    description: 'Two or more pages splitting authority on the same query.',
+    description: 'Two or more pages splitting authority on the same query — neither ranks as well as one consolidated page would.',
   },
 };
 

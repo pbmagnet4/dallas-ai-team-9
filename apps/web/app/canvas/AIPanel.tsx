@@ -22,7 +22,7 @@ interface AIPanelProps {
 const SUGGESTED = [
   "What's my biggest opportunity?",
   "Show me only critical pages",
-  "Fix plan for the SERP Trap",
+  "Fix plan for the Ranking Opportunity",
   "Which pages have the most sessions at risk?",
 ];
 
@@ -34,13 +34,13 @@ const STEP_META: Record<FixPlanStepKind, { icon: React.ElementType; color: strin
 };
 
 const FIX_PLANS: Record<string, FixPlan> = {
-  serp_trap: {
-    pattern: 'SERP_TRAP',
+  ranking_opportunity: {
+    pattern: 'RANKING_OPPORTUNITY',
     url: '/blog/what-is-hvac',
     steps: [
       {
         kind: 'trigger',
-        title: 'SERP Trap detected',
+        title: 'Ranking Opportunity detected',
         detail: '510 clicks/mo, avg position 4.2 — transactional query, informational page. CTR 2.1% vs expected 8%+.',
       },
       {
@@ -71,13 +71,13 @@ const FIX_PLANS: Record<string, FixPlan> = {
       },
     ],
   },
-  leaky_funnel: {
-    pattern: 'LEAKY_FUNNEL_ENTRY',
+  buried_page: {
+    pattern: 'BURIED_PAGE',
     url: '/services/hvac-installation',
     steps: [
       {
         kind: 'trigger',
-        title: 'Leaky Funnel Entry detected',
+        title: 'Buried Page detected',
         detail: '290 sessions/mo entering at /services/hvac-installation with 0 links to /contact. P0 priority.',
       },
       {
@@ -114,25 +114,25 @@ function getMockResponse(input: string): Message {
   const q = input.toLowerCase();
 
   if (q.includes('fix plan') || q.includes('how do i fix') || q.includes('how to fix')) {
-    if (q.includes('serp') || q.includes('blog')) {
-      return { role: 'assistant', fixPlan: FIX_PLANS.serp_trap };
+    if (q.includes('ranking') || q.includes('serp') || q.includes('blog')) {
+      return { role: 'assistant', fixPlan: FIX_PLANS.ranking_opportunity };
     }
-    if (q.includes('funnel') || q.includes('leaky') || q.includes('hvac-installation')) {
-      return { role: 'assistant', fixPlan: FIX_PLANS.leaky_funnel };
+    if (q.includes('buried') || q.includes('funnel') || q.includes('leaky') || q.includes('hvac-installation')) {
+      return { role: 'assistant', fixPlan: FIX_PLANS.buried_page };
     }
-    return { role: 'assistant', fixPlan: FIX_PLANS.serp_trap };
+    return { role: 'assistant', fixPlan: FIX_PLANS.ranking_opportunity };
   }
   if (q.includes('critical')) {
     return {
       role: 'assistant',
-      text: "Filtering to 1 critical page. **/services/hvac-installation** is your highest-priority issue — 2 patterns detected (Leaky Funnel Entry + SERP Trap), P0 priority, 340 clicks/month being lost. Try \"fix plan for leaky funnel\" to see a step-by-step remediation.",
+      text: "Filtering to 1 critical page. **/services/hvac-installation** is your highest-priority issue — 2 patterns detected (Buried Page + Ranking Opportunity), P0 priority, 340 clicks/month being lost. Try \"fix plan for buried page\" to see a step-by-step remediation.",
       command: { type: 'filter', filter: 'critical' },
     };
   }
   if (q.includes('leaking')) {
     return {
       role: 'assistant',
-      text: "**/blog/what-is-hvac** is attracting 510 clicks/month but 68% of sessions exit without converting. The top-ranking query has transactional intent but the page is informational. Try \"fix plan for the SERP trap\" to see exactly how to fix it.",
+      text: "**/blog/what-is-hvac** is attracting 510 clicks/month but 68% of sessions exit without converting. The top-ranking query has transactional intent but the page is informational. Try \"fix plan for the ranking opportunity\" to see exactly how to fix it.",
       command: { type: 'filter', filter: 'leaking' },
     };
   }
@@ -172,8 +172,8 @@ function getMockResponse(input: string): Message {
 // ── Fix Plan flow diagram ─────────────────────────────────────────────────────
 
 function FixPlanCard({ plan }: { plan: FixPlan }) {
-  const patternColor = plan.pattern === 'SERP_TRAP' ? '#f97316'
-    : plan.pattern === 'LEAKY_FUNNEL_ENTRY' ? '#eab308'
+  const patternColor = plan.pattern === 'RANKING_OPPORTUNITY' ? '#f97316'
+    : plan.pattern === 'BURIED_PAGE' ? '#eab308'
     : 'var(--accent)';
 
   return (

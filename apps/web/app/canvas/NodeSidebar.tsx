@@ -43,7 +43,7 @@ const CONFIDENCE_META = {
 
 const MOCK_BRIEFS: Record<string, ActionBrief> = {
   '/services/hvac-installation': {
-    pattern: 'LEAKY_FUNNEL_ENTRY',
+    pattern: 'BURIED_PAGE',
     issue: 'Strong keyword ranking driving traffic, but 72% of sessions exit before reaching a conversion event.',
     evidence: [
       '340 GSC clicks/month at avg. position 4.2 for "hvac installation dallas"',
@@ -56,7 +56,7 @@ const MOCK_BRIEFS: Record<string, ActionBrief> = {
     sources: ['gsc', 'ga4', 'crawl4ai'],
   },
   '/blog/what-is-hvac': {
-    pattern: 'SERP_TRAP',
+    pattern: 'RANKING_OPPORTUNITY',
     issue: 'High-impression informational page attracting users who exit immediately — page intent does not match visitor need.',
     evidence: [
       '510 GSC clicks/month at avg. position 6.8 — solid visibility',
@@ -69,7 +69,7 @@ const MOCK_BRIEFS: Record<string, ActionBrief> = {
     sources: ['gsc', 'ga4', 'dataforseo'],
   },
   '/contact': {
-    pattern: 'INVISIBLE_CONVERTER',
+    pattern: 'ORPHAN_PAGE',
     issue: 'Top-performing conversion page with near-zero keyword visibility — entirely dependent on direct navigation.',
     evidence: [
       'GA4: highest conversion rate in the site (top quartile)',

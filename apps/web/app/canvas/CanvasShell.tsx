@@ -34,7 +34,7 @@ const BASE_NODES: Node<UrlNodeData>[] = [
     data: {
       label: '/services/hvac-installation', health: 'critical', issueCount: 2, impactScore: 'P0',
       gscClicks: 340, ga4Sessions: 290,
-      patterns: ['LEAKY_FUNNEL_ENTRY', 'SERP_TRAP'],
+      patterns: ['BURIED_PAGE', 'RANKING_OPPORTUNITY'],
       sources: ['gsc', 'ga4', 'dataforseo', 'crawl4ai'],
     },
   },
@@ -43,7 +43,7 @@ const BASE_NODES: Node<UrlNodeData>[] = [
     data: {
       label: '/blog/what-is-hvac', health: 'leaking', issueCount: 1, impactScore: 'P1',
       gscClicks: 510, ga4Sessions: 480,
-      patterns: ['SERP_TRAP'],
+      patterns: ['RANKING_OPPORTUNITY'],
       sources: ['gsc', 'ga4', 'dataforseo'],
     },
   },
@@ -52,7 +52,7 @@ const BASE_NODES: Node<UrlNodeData>[] = [
     data: {
       label: '/contact', health: 'opportunity', issueCount: 1, impactScore: 'P1',
       gscClicks: 90, ga4Sessions: 85,
-      patterns: ['INVISIBLE_CONVERTER'],
+      patterns: ['ORPHAN_PAGE'],
       sources: ['gsc', 'ga4', 'crawl4ai'],
     },
   },

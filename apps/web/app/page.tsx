@@ -3,11 +3,11 @@ import { PATTERN_META } from '@/types/navflow';
 import type { IssuePattern } from '@/types/navflow';
 
 const PATTERN_ORDER: IssuePattern[] = [
-  'SERP_TRAP',
-  'INTENT_COLLISION',
-  'INVISIBLE_CONVERTER',
-  'LEAKY_FUNNEL_ENTRY',
-  'KEYWORD_CANNIBALIZATION_DRAIN',
+  'BURIED_PAGE',
+  'RANKING_OPPORTUNITY',
+  'ENGAGEMENT_DRAIN',
+  'ORPHAN_PAGE',
+  'KEYWORD_CANNIBALIZATION',
 ];
 
 const SOURCES = [

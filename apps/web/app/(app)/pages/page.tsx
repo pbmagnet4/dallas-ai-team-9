@@ -23,17 +23,17 @@ const PAGES = [
   },
   {
     url: '/services/hvac-installation', health: 'critical',
-    patterns: ['LEAKY_FUNNEL_ENTRY', 'SERP_TRAP'], clicks: 340, sessions: 290,
+    patterns: ['BURIED_PAGE', 'RANKING_OPPORTUNITY'], clicks: 340, sessions: 290,
     audited: 'Jun 2026', impactScore: 'P0',
   },
   {
     url: '/blog/what-is-hvac', health: 'leaking',
-    patterns: ['SERP_TRAP'], clicks: 510, sessions: 480,
+    patterns: ['RANKING_OPPORTUNITY'], clicks: 510, sessions: 480,
     audited: 'Jun 2026', impactScore: 'P1',
   },
   {
     url: '/contact', health: 'opportunity',
-    patterns: ['INVISIBLE_CONVERTER'], clicks: 90, sessions: 85,
+    patterns: ['ORPHAN_PAGE'], clicks: 90, sessions: 85,
     audited: 'Jun 2026', impactScore: 'P1',
   },
   {

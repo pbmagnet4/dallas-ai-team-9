@@ -11,50 +11,132 @@ export interface Audit {
   created_at: string;
 }
 
+// Phase 1 raw staging tables — written in parallel by each collector
+
+export interface Page {
+  id: string;
+  audit_id: string;
+  url: string;
+  title: string | null;
+  meta_description: string | null;
+  content_length: number | null;
+  internal_inlinks: number | null;
+  internal_outlinks: number | null;
+  has_cta: boolean | null;
+  page_depth: number | null;
+  click_depth: number | null;
+  created_at: string;
+}
+
+export interface GscSignal {
+  id: string;
+  audit_id: string;
+  url: string;
+  clicks: number | null;
+  impressions: number | null;
+  ctr: number | null;
+  avg_position: number | null;
+  top_keywords: { keyword: string; clicks: number; impressions: number; position: number }[] | null;
+  created_at: string;
+}
+
+export interface Ga4Signal {
+  id: string;
+  audit_id: string;
+  url: string;
+  sessions: number | null;
+  bounce_rate: number | null;
+  engagement_rate: number | null;
+  conversion_rate: number | null;
+  entry_rate: number | null;
+  session_duration: number | null;
+  conversion_count: number | null;
+  created_at: string;
+}
+
+export interface SeoSignal {
+  id: string;
+  audit_id: string;
+  url: string;
+  keyword_count: number | null;
+  top_keyword: string | null;
+  top_position: number | null;
+  competing_urls: { url: string; position: number }[] | null;
+  keyword_positions: { keyword: string; position: number; volume: number }[] | null;
+  top_ranking_terms: { term: string; volume: number }[] | null;
+  created_at: string;
+}
+
+// Phase 2 output — all sources joined on canonical URL
+
 export interface UrlSignal {
   id: string;
   audit_id: string;
   url: string;
 
-  // GSC
-  gsc_clicks: number | null;
-  gsc_impressions: number | null;
-  gsc_ctr: number | null;
-  gsc_position: number | null;
-  gsc_top_keywords: { keyword: string; clicks: number; impressions: number; position: number }[] | null;
+  nav_depth: number | null;
 
-  // GA4 (BigQuery Export)
-  ga4_sessions: number | null;
-  ga4_bounce_rate: number | null;
-  ga4_engagement_rate: number | null;
-  ga4_conversion_rate: number | null;
-  ga4_entry_rate: number | null;
-  ga4_session_duration: number | null;
-  ga4_conversion_count: number | null;
+  // GSC
+  clicks: number | null;
+  impressions: number | null;
+  ctr: number | null;
+  avg_position: number | null;
+
+  // GA4
+  page_views: number | null;
+  bounce_rate: number | null;
+  engagement_rate: number | null;
+  conversion_rate: number | null;
+  entry_rate: number | null;
+  session_duration: number | null;
+  conversion_count: number | null;
 
   // DataForSEO
-  dseo_keyword_count: number | null;
-  dseo_top_keyword: string | null;
-  dseo_top_position: number | null;
-  dseo_competing_urls: { url: string; position: number }[] | null;
-  dseo_keyword_positions: { keyword: string; position: number; volume: number }[] | null;
-  dseo_top_ranking_terms: { term: string; volume: number }[] | null;
+  search_volume: number | null;
+  keyword_count: number | null;
+  top_keyword: string | null;
+  top_position: number | null;
+  keyword_positions: { keyword: string; position: number; volume: number }[] | null;
 
   // Crawl4AI
-  crawl_internal_inlinks: number | null;
-  crawl_internal_outlinks: number | null;
-  crawl_has_cta: boolean | null;
-  crawl_title: string | null;
-  crawl_meta_description: string | null;
-  crawl_content_length: number | null;
-  crawl_page_depth: number | null;
-  crawl_click_depth: number | null;
+  internal_inlinks: number | null;
+  internal_outlinks: number | null;
+  has_cta: boolean | null;
+  content_length: number | null;
+  page_depth: number | null;
+  click_depth: number | null;
 
-  // Scoring
-  issue_patterns: IssuePattern[] | null;
   impact_score: 'P0' | 'P1' | 'P2' | 'P3' | null;
   health: 'critical' | 'leaking' | 'opportunity' | 'healthy' | null;
 
+  created_at: string;
+}
+
+// Phase 3 output — pattern detection results
+
+export interface Issue {
+  id: string;
+  audit_id: string;
+  url: string;
+  type: IssuePattern;
+  score: number;
+  signals: Record<string, unknown>;
+  created_at: string;
+}
+
+// Phase 4 output — OpenRouter LLM cached briefs
+
+export interface ActionBrief {
+  id: string;
+  audit_id: string;
+  url: string;
+  issue_pattern: IssuePattern;
+  summary: string;
+  findings: string[];
+  recommended_action: string;
+  estimated_impact: string;
+  confidence: Confidence;
+  sources: DataSource[];
   created_at: string;
 }
 
@@ -66,18 +148,5 @@ export interface PageFlow {
   session_count: number;
   transition_rate: number | null;
   avg_time_between: number | null;
-  created_at: string;
-}
-
-export interface ActionBrief {
-  id: string;
-  audit_id: string;
-  url: string;
-  issue_pattern: IssuePattern;
-  evidence: [string, string, string];
-  recommended_action: string;
-  estimated_impact: string;
-  confidence: Confidence;
-  sources: DataSource[];
   created_at: string;
 }

@@ -6,6 +6,36 @@ Cap: 10 entries — archive older entries to CHANGELOG-YYYY.md when exceeded.
 
 ---
 
+## 2026-06-23 — flowgram patterns + UI enhancement pass + light/dark toggle
+
+### Changes
+- **flowgram.ai research & extraction** — evaluated flowgram as React Flow replacement (rejected — wrong model for data-driven canvas); extracted visual grammar as patterns
+- **useHistory hook** (`hooks/useHistory.ts`) — generic snapshot-based undo/redo, single useState to avoid stale closure issues, 50-entry cap
+- **variableEngine** (`lib/variableEngine.ts`) — `PortKind`, `EdgeMetrics` types; `computeEdgeMetrics()` derives drop-off rates and conversion potential; `getPortKind()` maps health to funnel role
+- **MetricEdge** (`components/MetricEdge.tsx`) — custom React Flow edge with fat invisible hit area and EdgeLabelRenderer tooltip; weight-based thickness across all 3 layout modes
+- **Dagre layout** — third layout mode (top-down compact tree) alongside ELK + force; all 3 computed in parallel on mount
+- **DoubleLoop cascade** — BFS from critical/leaking nodes; cascade depth injected into node data; downstream nodes dim by opacity
+- **UrlNode** — full visual redesign: colored header band replacing 2px strip, lucide health icons, health-tinted border via color-mix, health-colored handles
+- **NodeSidebar** — full CSS var conversion (no more hardcoded dark Tailwind classes), port kind intelligence section using variableEngine, width 320px
+- **AIPanel fix plan** — replaced linear timeline with node card flow diagram; condition steps have 2-column Yes/No branch grid
+- **Light/dark theme toggle** — attribute-based (`[data-theme="dark"]` on html), FOIT prevention inline script in `<head>`, `useTheme` hook with localStorage persistence
+
+### Key Decisions
+- React Flow correct for NavFlow; flowgram is for authored workflow builders, not data-driven intelligence canvases
+- `color-mix(in srgb, ${color} N%, var(--surface))` used throughout for theme-adaptive tinting — eliminates all hardcoded dark/light branches
+- Light mode is the explicit default (not OS-detected); user preference persists in localStorage
+
+### State
+- 3 commits: `3aeb72c` (flowgram patterns), `6b47da9` (UI enhancement pass), `cd7cd76` (theme toggle)
+- TypeScript clean, production build passing, all 7 routes static
+- Canvas: 3 layout modes, undo/redo, edge metrics, double-loop cascade, port kind intelligence
+
+### Next Session Priorities
+- Enable BigQuery export on demo GA4 property → real session flow data for `flowWeight` values
+- Set up OpenRouter account + spend cap → wire AI panel to real Gemini 2.5 Flash
+- Wire "Ask AI" topbar button to canvas AI panel
+- Expanded pattern legend (task #99), error state components (task #100)
+
 ## 2026-06-15 — PRD v0.1 + Project Scaffolding
 
 ### Changes

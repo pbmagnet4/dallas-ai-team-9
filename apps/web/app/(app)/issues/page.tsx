@@ -6,7 +6,7 @@ const ISSUES = [
   {
     id: '1',
     url: '/services/hvac-installation',
-    pattern: 'LEAKY_FUNNEL_ENTRY' as const,
+    pattern: 'BURIED_PAGE' as const,
     priority: 'P0',
     impact: '15–25% conversion lift',
     action: 'Add a conversion CTA above the fold and one internal link to /contact.',
@@ -16,7 +16,7 @@ const ISSUES = [
   {
     id: '2',
     url: '/services/hvac-installation',
-    pattern: 'SERP_TRAP' as const,
+    pattern: 'RANKING_OPPORTUNITY' as const,
     priority: 'P0',
     impact: '10–15% CTR improvement',
     action: 'Rewrite title tag to match transactional intent.',
@@ -26,7 +26,7 @@ const ISSUES = [
   {
     id: '3',
     url: '/blog/what-is-hvac',
-    pattern: 'SERP_TRAP' as const,
+    pattern: 'RANKING_OPPORTUNITY' as const,
     priority: 'P1',
     impact: '10–18% service page visits',
     action: 'Add HVAC cost section + CTA to service page.',
@@ -36,7 +36,7 @@ const ISSUES = [
   {
     id: '4',
     url: '/contact',
-    pattern: 'INVISIBLE_CONVERTER' as const,
+    pattern: 'ORPHAN_PAGE' as const,
     priority: 'P1',
     impact: '20–35% more form submissions',
     action: 'Add /contact links to 5 highest-traffic service pages.',
