@@ -46,3 +46,4 @@ Thumbs.db
 # Temporary
 .cache/
 tmp/
+.codegraph/
